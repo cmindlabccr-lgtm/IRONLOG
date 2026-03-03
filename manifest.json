@@ -1,0 +1,17 @@
+{
+  "name": "IronLog - Stoic Training",
+  "short_name": "IronLog",
+  "description": "Herramienta de registro de entrenamiento con enfoque estoico.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
