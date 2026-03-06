@@ -441,6 +441,28 @@ body {
     color: white;
 }
 
+.nav-item-ia {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border-left: 3px solid #2563eb;
+}
+
+.nav-item-ia:hover {
+    background: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+}
+
+[data-theme="dark"] .nav-item-ia {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border-left: 3px solid #60a5fa;
+}
+
+[data-theme="dark"] .nav-item-ia:hover {
+    background: rgba(96, 165, 250, 0.15);
+    color: #93c5fd;
+}
+
 .nav-divider {
     height: 1px;
     background: rgba(255, 255, 255, 0.1);
