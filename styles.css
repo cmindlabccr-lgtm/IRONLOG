@@ -4684,26 +4684,31 @@ body.fast-animations * {
 /* Chatbot Mobile Fixes */
 @media (max-width: 768px) {
     .chatbot-window {
-        width: calc(100% - 30px);
-        /* Dejar un margen de 15px a cada lado */
+        width: 90vw;
+        /* Asegura que no se pase del ancho de la pantalla */
         height: 60vh;
-        /* Ocupar el 60% de la pantalla, para no taparlo todo */
-        max-width: 100%;
-        max-height: 400px;
-        /* Que no sea gigante en móviles altos */
+        max-width: 400px;
+        max-height: 500px;
         bottom: 80px;
-        /* Subirla por encima de la barra de navegación de la app */
-        right: 15px;
-        left: 15px;
-        /* Centrada */
+        right: 5vw;
+        /* Centrado 5vw derecha + 5vw izq + 90vw ancho */
+        left: 5vw;
         border-radius: 16px;
-        /* Mantener esquinas redondeadas */
         border: 1px solid var(--border-light);
         z-index: 9999;
+        box-sizing: border-box;
+        /* Fundamental para que el padding no rompa el width */
+    }
+
+    .chatbot-header,
+    .chatbot-input-area {
+        box-sizing: border-box;
+        width: 100%;
     }
 
     .chatbot-messages {
         padding-bottom: 20px;
+        box-sizing: border-box;
     }
 
     .chatbot-input-area {
