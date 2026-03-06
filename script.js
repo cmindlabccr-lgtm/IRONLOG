@@ -3214,18 +3214,6 @@ function handleFitAuth() {
    CHATBOT DEMO (MOCK IA)
    =========================================================== */
 
-function toggleChatbot() {
-    const chatbotWindow = document.getElementById('chatbot-window');
-    const isHidden = chatbotWindow.classList.contains('hidden');
-
-    if (isHidden) {
-        chatbotWindow.classList.remove('hidden');
-        document.getElementById('chatbot-input').focus();
-    } else {
-        chatbotWindow.classList.add('hidden');
-    }
-}
-
 function handleChatbotKeyPress(event) {
     if (event.key === 'Enter') {
         sendChatbotMessage();

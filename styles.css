@@ -4541,65 +4541,8 @@ body.fast-animations * {
 }
 
 /* =========================================
-   CHATBOT DEMO STYLES
+   CHATBOT STYLES (TAB VER)
    ========================================= */
-.chatbot-window {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 350px;
-    max-width: calc(100vw - 50px);
-    height: 500px;
-    max-height: calc(100vh - 120px);
-    background: var(--bg-card);
-    border: 1px solid var(--border-light);
-    border-radius: 16px;
-    box-shadow: var(--shadow-card);
-    display: flex;
-    flex-direction: column;
-    z-index: 9998;
-    overflow: hidden;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-origin: bottom right;
-}
-
-.chatbot-window.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.8);
-}
-
-.chatbot-header {
-    background: var(--bg-body);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.chatbot-title {
-    font-weight: 800;
-    color: var(--accent-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-}
-
-.chatbot-close {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.chatbot-close:hover {
-    color: var(--text-primary);
-}
-
 .chatbot-messages {
     flex-grow: 1;
     padding: 15px;
@@ -4683,22 +4626,6 @@ body.fast-animations * {
 /* Chatbot Mobile Fixes */
 /* Chatbot Mobile Fixes */
 @media (max-width: 768px) {
-    .chatbot-window {
-        width: 90vw;
-        /* Asegura que no se pase del ancho de la pantalla */
-        height: 60vh;
-        max-width: 400px;
-        max-height: 500px;
-        bottom: 80px;
-        right: 5vw;
-        /* Centrado 5vw derecha + 5vw izq + 90vw ancho */
-        left: 5vw;
-        border-radius: 16px;
-        border: 1px solid var(--border-light);
-        z-index: 9999;
-        box-sizing: border-box;
-        /* Fundamental para que el padding no rompa el width */
-    }
 
     .chatbot-header,
     .chatbot-input-area {
