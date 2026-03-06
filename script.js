@@ -3131,6 +3131,62 @@ function unlockNextCoreLevel(levelNum) {
     renderCoreMastery();
 }
 
+// === TEXTOS LEGALES (RGPD / AVISO MÉDICO) ===
+function openLegalModal(type) {
+    const modal = document.getElementById('legal-modal');
+    const title = document.getElementById('legal-modal-title');
+    const body = document.getElementById('legal-modal-body');
+
+    if (!modal || !title || !body) return;
+
+    if (type === 'privacy') {
+        title.innerHTML = '<i class="fas fa-user-shield"></i> POLÍTICA DE PRIVACIDAD';
+        body.innerHTML = `
+            <div style="color: var(--text-primary); font-size: 0.9rem; line-height: 1.6;">
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">1. Protección de Datos (RGPD y LOPDGDD)</h4>
+                <p style="margin-bottom: 15px;">En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD), le informamos que <strong>IRONLOG no recopila, almacena ni transmite datos personales a servidores externos</strong>.</p>
+                
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">2. Almacenamiento Local (Local Storage)</h4>
+                <p style="margin-bottom: 15px;">Todos los datos generados por su uso de la aplicación (entrenamientos, pesos levantados, medidas biométricas, rutinas guardadas, y preferencias de configuración) se almacenan <strong>exclusivamente de forma local en su dispositivo</strong> mediante la tecnología <em>Local Storage</em> del navegador.</p>
+                <p style="margin-bottom: 15px;">Usted tiene el control absoluto sobre estos datos. Puede eliminarlos en cualquier momento utilizando la opción "Borrar Todos los Datos" disponible en la sección <em>Ajustes -> Zona de Peligro</em>, o borrando los datos de navegación de su navegador web.</p>
+
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">3. Servicios de Terceros e Inteligencia Artificial</h4>
+                <p style="margin-bottom: 15px;">En el caso de utilizar funciones interactivas como el Chatbot de IA, las consultas de texto introducidas explícitamente por el usuario podrían ser procesadas por la API correspondiente (ej. Google Gemini) con el único fin de generar una respuesta. Ningún dato histórico de entrenamiento se envía automáticamente a terceros sin su interacción.</p>
+
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">4. Exención de Responsabilidad Técnica</h4>
+                <p style="margin-bottom: 15px;">Dado que los datos residen únicamente en su dispositivo, IRONLOG no puede recuperar su información en caso de que borre la caché de su navegador o pierda el dispositivo. Se recomienda el uso rutinario de la herramienta "Descargar Copia de Seguridad".</p>
+            </div>
+        `;
+    } else if (type === 'terms') {
+        title.innerHTML = '<i class="fas fa-file-contract"></i> TÉRMINOS Y CONDICIONES';
+        body.innerHTML = `
+            <div style="color: var(--text-primary); font-size: 0.9rem; line-height: 1.6;">
+                <h4 style="color: #ef4444; margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;"><i class="fas fa-exclamation-triangle"></i> Descargo de Responsabilidad Médica</h4>
+                <p style="margin-bottom: 15px; font-weight: bold; color: var(--text-primary);">IRONLOG es exclusivamente una herramienta de registro y seguimiento informático. NO proporciona consejo médico ni sustituye a un profesional sanitario, fisioterapeuta, o entrenador personal cualificado.</p>
+                <p style="margin-bottom: 15px;">El usuario asume todos los riesgos derivados de la actividad física. Las fórmulas de estimación (como el cálculo del 1RM) y los protocolos de calentamiento son meramente orientativos. Consulte siempre a un especialista antes de iniciar cualquier programa de entrenamiento intenso.</p>
+                
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">Aceptación de las Condiciones</h4>
+                <p style="margin-bottom: 15px;">El uso de esta aplicación web implica la aceptación total de estos términos. La aplicación se proporciona "tal cual" (AS IS), sin garantía explícita o implícita de su idoneidad para un propósito particular.</p>
+
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">Propiedad Intelectual</h4>
+                <p style="margin-bottom: 15px;">El código fuente, diseño de interfaz, identidad gráfica ("IRONLOG"), y contenidos textuales originales ("Códex del Hierro") son propiedad intelectual de su creador. Queda prohibida su reproducción, distribución o uso con fines comerciales sin autorización previa y por escrito.</p>
+                
+                <h4 style="color: var(--accent-primary); margin-bottom: 10px; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">Desarrollo Continuo</h4>
+                <p style="margin-bottom: 15px;">IRONLOG se encuentra en fase de desarrollo activo. Nos reservamos el derecho a modificar, suspender o descontinuar temporal o permanentemente cualquier característica de la aplicación sin previo aviso.</p>
+            </div>
+        `;
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function closeLegalModal() {
+    const modal = document.getElementById('legal-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
 // === INTEGRACIÓN GOOGLE FIT ===
 function handleFitAuth() {
     // Nota: El ID de cliente es ficticio para demostración
@@ -3154,3 +3210,68 @@ function handleFitAuth() {
     window.location.href = authUrl;
 }
 
+/* ===========================================================
+   CHATBOT DEMO (MOCK IA)
+   =========================================================== */
+
+function toggleChatbot() {
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const isHidden = chatbotWindow.classList.contains('hidden');
+
+    if (isHidden) {
+        chatbotWindow.classList.remove('hidden');
+        document.getElementById('chatbot-input').focus();
+    } else {
+        chatbotWindow.classList.add('hidden');
+    }
+}
+
+function handleChatbotKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendChatbotMessage();
+    }
+}
+
+function sendChatbotMessage() {
+    const input = document.getElementById('chatbot-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    const messagesContainer = document.getElementById('chatbot-messages');
+
+    // 1. Añadir mensaje de usuario
+    const userMsg = document.createElement('div');
+    userMsg.className = 'user-message';
+    userMsg.textContent = message;
+    messagesContainer.appendChild(userMsg);
+
+    // Limpiar input
+    input.value = '';
+
+    // Auto scroll abajo
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // 2. Simular "Escribiendo..." y respuesta
+    setTimeout(() => {
+        const botMsg = document.createElement('div');
+        botMsg.className = 'bot-message';
+
+        // Simular respuestas "inteligentes" básicas
+        let msgLower = message.toLowerCase();
+        if (msgLower.includes('pecho') && msgLower.includes('ejercicio')) {
+            botMsg.innerHTML = "Basado en tu nivel, te recomiendo empezar con <strong>Press de Banca Inclinado</strong> para enfatizar el haz clavicular, seguido de <strong>Cruces en Polea</strong>. ¡Mantén un RIR 1-2!";
+        } else if (msgLower.includes('cansado') || msgLower.includes('fatiga')) {
+            botMsg.innerHTML = "La fatiga es parte del proceso. Asegúrate de dormir 7-8h esta noche. ¿Has considerado que tal vez necesites una <strong>Semana de Descarga (Deload)</strong>? Revisa el Códex, Pestaña 'Gestión de Fatiga'.";
+        } else if (msgLower.includes('hola')) {
+            botMsg.innerHTML = "¡Hola Máquina! Listo para forjar hierro hoy. ¿Qué toca entrenar?";
+        } else if (msgLower.includes('gracias')) {
+            botMsg.innerHTML = "¡A ti! A mutar 🔥";
+        } else {
+            botMsg.innerHTML = "*(Fase Experimental)* IRONLOG IA está actualmente en desarrollo continuo. Próximamente dispondrás de un verdadero ecosistema inteligente capaz de adaptar tu planificación y resolver tus dudas de entrenamiento al instante.";
+        }
+
+        messagesContainer.appendChild(botMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    }, 1000 + Math.random() * 1000); // 1-2 segundos de delay
+}

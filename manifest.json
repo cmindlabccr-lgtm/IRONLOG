@@ -1,11 +1,11 @@
 {
-  "name": "IronLog - Stoic Training",
-  "short_name": "IronLog",
-  "description": "Herramienta de registro de entrenamiento con enfoque estoico.",
-  "start_url": "index.html",
+  "name": "IRONLOG - El Códex del Hierro",
+  "short_name": "IRONLOG",
+  "description": "Aplicación de seguimiento de entrenamiento de fuerza.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
   "icons": [
     {
       "src": "icon-512.png",

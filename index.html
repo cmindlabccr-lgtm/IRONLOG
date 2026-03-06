@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IronLog - Diario de Entrenamiento</title>
+    <title>IRONLOG - El Códex del Hierro</title>
 
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="icon" type="image/png" href="logo.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="IronLog">
+    <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-512.png">
     <link rel="icon" type="image/png" href="icon-512.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="IRONLOG">
+    <meta name="theme-color" content="#1e293b">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,6 +54,11 @@
                 <span class="nav-text">CRONÓMETRO</span>
             </button>
 
+            <button class="nav-item" onclick="toggleChatbot(); closeSidebar()">
+                <div class="nav-icon"><i class="fas fa-robot"></i></div>
+                <span class="nav-text">IRONLOG IA (DEMO)</span>
+            </button>
+
             <button class="nav-item" onclick="switchTab('settings'); closeSidebar()">
                 <div class="nav-icon"><i class="fas fa-cog"></i></div>
                 <span class="nav-text">CONFIGURACIÓN</span>
@@ -61,9 +66,6 @@
         </nav>
 
         <div class="sidebar-footer">
-            <button id="theme-toggle-btn" class="logout-btn special-item" onclick="toggleTheme()">
-                <i class="fas fa-moon" id="theme-icon"></i> CAMBIAR TEMA
-            </button>
             <button class="logout-btn" onclick="location.reload()">
                 <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
             </button>
@@ -767,6 +769,17 @@
                         </select>
                     </div>
 
+                    <div class="supp-warning"
+                        style="background: rgba(148, 163, 184, 0.1); border-left: 4px solid var(--text-muted); padding: 12px; border-radius: 6px; margin-top: 20px; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                        <p style="margin: 0;"><i class="fas fa-info-circle"
+                                style="color: var(--text-muted); margin-right: 5px;"></i> <strong>Cálculos
+                                Orientativos:</strong> Estos resultados son estimaciones matemáticas generales. Las
+                            necesidades calóricas reales varían drásticamente según la genética, el historial
+                            metabólico, la edad (no es lo mismo tener 20 que 70 años), enfermedades preexistentes (como
+                            diabetes) o historiales médicos y cirugías. Consulta siempre a un dietista-nutricionista
+                            colegiado para un plan personalizado.</p>
+                    </div>
+
                     <button class="btn-premium btn-premium-blue" onclick="calculateMacros()"
                         style="margin-top: 20px; width: 100%;">
                         <i class="fas fa-bolt"></i> CALCULAR
@@ -791,7 +804,7 @@
                     <button class="nav-back-btn" onclick="switchTab('dashboard')">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2>Bitácora de Batalla</h2>
+                    <h2>Bitácora de Hierro</h2>
                 </header>
                 <div id="logbook-list" class="logbook-container">
                 </div>
@@ -1062,8 +1075,8 @@
 
             <main id="profile" class="tab-content">
                 <header class="section-header">
-                    <button class="btn-home-mini" onclick="switchTab('dashboard')">
-                        <i class="fas fa-home"></i> <span>INICIO</span>
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')">
+                        <i class="fas fa-arrow-left"></i>
                     </button>
                     <h2>Perfil de Atleta</h2>
                 </header>
@@ -1268,8 +1281,8 @@
 
             <main id="settings" class="tab-content">
                 <header class="section-header">
-                    <button class="btn-home-mini" onclick="switchTab('dashboard')">
-                        <i class="fas fa-home"></i> <span>INICIO</span>
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')">
+                        <i class="fas fa-arrow-left"></i>
                     </button>
                     <h2>Ajustes del Sistema</h2>
                 </header>
@@ -1307,13 +1320,11 @@
                     </p>
 
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="routine-btn save" onclick="downloadBackup()"
-                            style="border: 1px solid var(--accent-primary); color: var(--accent-primary); justify-content: center;">
+                        <button class="routine-btn save settings-save-btn" onclick="downloadBackup()">
                             <i class="fas fa-cloud-download-alt"></i> DESCARGAR COPIA DE SEGURIDAD
                         </button>
 
-                        <button class="routine-btn load" onclick="triggerImport()"
-                            style="width: 100%; background: var(--text-primary); color: #FFD700; justify-content: center;">
+                        <button class="routine-btn load settings-load-btn" onclick="triggerImport()">
                             <i class="fas fa-cloud-upload-alt"></i> RESTAURAR PROGRESO
                         </button>
 
@@ -1331,7 +1342,30 @@
                     </button>
                 </section>
 
-                <p class="app-version">IronLog v2.1 - Build for Performance</p>
+                <section class="card settings-card" style="margin-top: 20px;">
+                    <h3><i class="fas fa-shield-alt"></i> LEGAL</h3>
+
+                    <div class="settings-option-row" style="cursor: pointer;" onclick="openLegalModal('privacy')">
+                        <div class="settings-option-info">
+                            <span class="settings-option-title"><i class="fas fa-user-shield"></i> Política de
+                                Privacidad</span>
+                            <span class="settings-option-desc">Cómo gestionamos tus datos de entrenamiento.</span>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
+                    </div>
+
+                    <div class="settings-option-row" style="margin-top: 15px; cursor: pointer;"
+                        onclick="openLegalModal('terms')">
+                        <div class="settings-option-info">
+                            <span class="settings-option-title"><i class="fas fa-file-contract"></i> Términos de
+                                Servicio</span>
+                            <span class="settings-option-desc">Reglas de uso de la aplicación IRONLOG.</span>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
+                    </div>
+                </section>
+
+                <p class="app-version" style="margin-top: 30px;">IronLog v2.1 - Build for Performance</p>
             </main>
         </div>
 
@@ -1349,11 +1383,25 @@
             </div>
         </div>
 
-        <!-- NEW DEDICATED MENTAL BOOST MODAL -->
         <div id="mental-boost-modal" class="modal-overlay hidden" style="z-index: 10000;">
             <div class="modal-content" style="max-width: 400px; border: 2px solid var(--accent-primary);">
                 <div id="boost-body" style="padding: 20px; text-align: center;">
                     <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW LEGAL MODAL -->
+        <div id="legal-modal" class="modal-overlay hidden" style="z-index: 10001;">
+            <div class="modal-content" style="max-width: 600px;">
+                <header class="modal-header">
+                    <h3 id="legal-modal-title">DOCUMENTO LEGAL</h3>
+                    <button class="modal-close-btn" onclick="closeLegalModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </header>
+                <div id="legal-modal-body" class="modal-body-scroll" style="text-align: left; padding: 20px;">
+                    <!-- Text injected by JS -->
                 </div>
             </div>
         </div>
@@ -1376,8 +1424,8 @@
         <main id="academia" class="tab-content" style="padding-bottom: 80px;">
             <header class="section-header"
                 style="border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 25px;">
-                <button class="btn-home-mini" onclick="switchTab('dashboard')" style="position: absolute; left: 10px;">
-                    <i class="fas fa-home"></i> <span>INICIO</span>
+                <button class="nav-back-btn" onclick="switchTab('dashboard')">
+                    <i class="fas fa-arrow-left"></i>
                 </button>
                 <h2
                     style="font-size: 1.3rem; letter-spacing: 2px; font-weight: 800; color: var(--text-primary); width: 100%; text-align: center;">
@@ -2280,6 +2328,30 @@
     </div>
 
 
+
+    <!-- CHATBOT DEMO -->
+    <div id="chatbot-window" class="chatbot-window hidden">
+        <div class="chatbot-header">
+            <div class="chatbot-title">
+                <i class="fas fa-robot"></i> IRONLOG IA
+            </div>
+            <button class="chatbot-close" onclick="toggleChatbot()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="bot-message">
+                ¡Hola! Soy el asistente de IRONLOG. ¿En qué te puedo ayudar con tu entrenamiento hoy? (Modo Demo)
+            </div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..."
+                onkeypress="handleChatbotKeyPress(event)">
+            <button class="chatbot-send" onclick="sendChatbotMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
