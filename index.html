@@ -1365,6 +1365,45 @@
 
                 <p class="app-version" style="margin-top: 30px;">IronLog v2.1 - Build for Performance</p>
             </main>
+
+            <!-- CHATBOT DEDICATED TAB -->
+            <main id="chatbot-tab" class="tab-content">
+                <div
+                    style="display: flex; flex-direction: column; height: 100%; min-height: 80vh; background: var(--bg-body);">
+                    <header class="section-header"
+                        style="flex-shrink: 0; padding: 20px; border-bottom: 1px solid var(--border-light); background: var(--bg-card); display: flex; align-items: center; justify-content: space-between;">
+                        <button class="nav-back-btn" onclick="switchTab('dashboard')">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2
+                            style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0; flex-grow: 1; text-align: center;">
+                            <i class="fas fa-robot" style="color: var(--accent-primary); margin-right: 5px;"></i>
+                            IRONLOG IA
+                        </h2>
+                        <div style="width: 40px;"></div> <!-- Spacer para centrar el titulo -->
+                    </header>
+
+                    <div id="chatbot-messages" class="chatbot-messages"
+                        style="flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                        <div class="bot-message"
+                            style="background: var(--bg-card); border: 1px solid var(--border-light); padding: 15px; border-radius: 12px 12px 12px 4px; align-self: flex-start; max-width: 90%; color: var(--text-secondary); line-height: 1.5;">
+                            ¡Hola! Soy el asistente de IRONLOG. ¿En qué te puedo ayudar con tu entrenamiento hoy? (Modo
+                            Demo)
+                        </div>
+                    </div>
+
+                    <div class="chatbot-input-area"
+                        style="flex-shrink: 0; padding: 15px 20px; padding-bottom: calc(15px + env(safe-area-inset-bottom, 20px)); background: var(--bg-card); border-top: 1px solid var(--border-light); display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..."
+                            onkeypress="handleChatbotKeyPress(event)"
+                            style="flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 25px; padding: 12px 20px; outline: none; transition: border-color 0.2s;">
+                        <button class="chatbot-send" onclick="sendChatbotMessage()"
+                            style="background: var(--accent-primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s, background 0.2s; flex-shrink: 0;">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
         </div>
 
         <div id="logbook-modal" class="modal-overlay hidden">
@@ -2326,43 +2365,6 @@
     </div>
 
 
-
-    <!-- CHATBOT DEDICATED TAB -->
-    <main id="chatbot-tab" class="tab-content">
-        <div
-            style="display: flex; flex-direction: column; height: 100vh; max-height: 100vh; overflow: hidden; background: var(--bg-body);">
-            <header class="section-header"
-                style="flex-shrink: 0; padding: 20px; border-bottom: 1px solid var(--border-light); background: var(--bg-card); display: flex; align-items: center; justify-content: space-between;">
-                <button class="nav-back-btn" onclick="switchTab('dashboard')">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h2
-                    style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0; flex-grow: 1; text-align: center;">
-                    <i class="fas fa-robot" style="color: var(--accent-primary); margin-right: 5px;"></i> IRONLOG IA
-                </h2>
-                <div style="width: 40px;"></div> <!-- Spacer para centrar el titulo -->
-            </header>
-
-            <div id="chatbot-messages" class="chatbot-messages"
-                style="flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-                <div class="bot-message"
-                    style="background: var(--bg-card); border: 1px solid var(--border-light); padding: 15px; border-radius: 12px 12px 12px 4px; align-self: flex-start; max-width: 90%; color: var(--text-secondary); line-height: 1.5;">
-                    ¡Hola! Soy el asistente de IRONLOG. ¿En qué te puedo ayudar con tu entrenamiento hoy? (Modo Demo)
-                </div>
-            </div>
-
-            <div class="chatbot-input-area"
-                style="flex-shrink: 0; padding: 15px 20px; padding-bottom: calc(15px + env(safe-area-inset-bottom, 20px)); background: var(--bg-card); border-top: 1px solid var(--border-light); display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..."
-                    onkeypress="handleChatbotKeyPress(event)"
-                    style="flex-grow: 1; background: var(--bg-input); border: 1px solid var(--border-light); color: var(--text-primary); border-radius: 25px; padding: 12px 20px; outline: none; transition: border-color 0.2s;">
-                <button class="chatbot-send" onclick="sendChatbotMessage()"
-                    style="background: var(--accent-primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s, background 0.2s; flex-shrink: 0;">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </main>
 
     <script src="script.js"></script>
 </body>
