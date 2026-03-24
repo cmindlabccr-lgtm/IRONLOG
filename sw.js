@@ -1,9 +1,13 @@
-const CACHE_NAME = 'ironlog-v1';
+const CACHE_NAME = 'ironlog-v2';
 const ASSETS = [
     'index.html',
     'styles.css',
     'script.js',
-    'icon-512.png'
+    'icon-512.png',
+    'nutrition_bg.png',
+    'warmup_bg.png',
+    'philosophy_bg.png',
+    'supplements_bg.png'
 ];
 
 // Install: Cache essential assets
