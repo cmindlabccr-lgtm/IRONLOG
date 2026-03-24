@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === CARGA DE DATOS INICIAL ===
     try {
+        if (typeof initOnboarding === 'function') initOnboarding();
         loadUserName();
         updateRoutinesDropdown();
 
@@ -2827,7 +2828,15 @@ const EXERCISE_DATABASE = [
     // CORE
     "Plancha Abdominal (Plank)", "Plancha con Peso", "Crunch Abdominal", "Abdominales Lastrados",
     "Elevación de Piernas Colgado", "Elevación de Piernas Tumbado", "Rueda Abdominal (Ab Wheel)",
-    "Russian Twists (Giros Rusos)"
+    "Russian Twists (Giros Rusos)",
+    // ACONDICIONAMIENTO & HIIT
+    "Carrera", "Burpees", "Abdominales (Sit-ups)", "Descanso (Recuperación)",
+    "SkiErg", "Sled Push (Trineo)", "Sled Pull (Trineo)", "Burpee Broad Jumps",
+    "Remo (Concept2)", "Farmer's Carry", "Sandbag Lunges", "Wall Balls",
+    "Mountain Climbers", "Jumping Jacks", "Sentadillas al Aire (Air Squats)", "Kettlebell Swings", "Goblet Squats",
+    // MOVILIDAD & RECUPERACIÓN
+    "Hipers (Extensiones Cadera)", "Zancada del Corredor", "Movilidad de Tobillo",
+    "Gato-Camello", "Rotaciones Torácicas", "Perro Boca Abajo"
 ];
 
 let autocompleteTimeout;
@@ -3262,4 +3271,803 @@ function sendChatbotMessage() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
     }, 1000 + Math.random() * 1000); // 1-2 segundos de delay
+}
+
+/* ===========================================================
+   ONBOARDING LOGIC
+   =========================================================== */
+function initOnboarding() {
+    const isDone = localStorage.getItem('ironlog_onboarding_done');
+    const overlay = document.getElementById('onboarding-overlay');
+    if (!isDone && overlay) {
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else if (overlay) {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function nextObStep(stepNum) {
+    if (stepNum === 2) {
+        const nameInput = document.getElementById('ob-name');
+        if (nameInput && nameInput.value.trim() !== '') {
+            localStorage.setItem('ironlog_username', nameInput.value.trim().toUpperCase());
+        } else {
+            localStorage.setItem('ironlog_username', 'ATLETA');
+        }
+    }
+    document.querySelectorAll('.onboarding-step').forEach(el => el.classList.remove('active'));
+    document.getElementById('ob-step-' + stepNum).classList.add('active');
+}
+
+function finishOnboarding() {
+    const weight = document.getElementById('ob-weight').value || '75';
+    const height = document.getElementById('ob-height').value || '180';
+    const age = document.getElementById('ob-age').value || '25';
+    const gender = document.getElementById('ob-gender').value || 'male';
+
+    const bodyStats = { weight: weight, height: height, neck: '', chest: '', biceps: '', waist: '', thigh: '' };
+    localStorage.setItem('ironlog_body_stats', JSON.stringify(bodyStats));
+
+    const activity = document.getElementById('ob-activity').value || '1.55';
+    const goal = document.getElementById('ob-goal').value || 'gain';
+
+    const nutriData = { weight: weight, height: height, age: age, gender: gender, activity: activity, goal: goal };
+    localStorage.setItem('ironlog_nutrition_data', JSON.stringify(nutriData));
+
+    localStorage.setItem('ironlog_onboarding_done', 'true');
+
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 500);
+    }
+    loadUserName();
+    loadBodyStats();
+    loadNutritionData();
+    if (typeof calculateMacros === 'function') { setTimeout(() => { calculateMacros(); }, 200); }
+}
+
+/* ===========================================================
+   BIBLIOTECA IRONLOG (ENTRENAMIENTOS PREDEFINIDOS)
+   =========================================================== */
+const LIBRARY_ROUTINES = {
+    // HIPERTROFIA - PPL
+    "PPL: Empuje (Push)": [
+        { exercise: "Press de Banca", series: [{kg: "", reps: "8"}, {kg: "", reps: "8"}, {kg: "", reps: "8"}, {kg: "", reps: "8"}] },
+        { exercise: "Press Militar con Barra", series: [{kg: "", reps: "8"}, {kg: "", reps: "8"}, {kg: "", reps: "8"}] },
+        { exercise: "Press Inclinado con Mancuernas", series: [{kg: "", reps: "10"}, {kg: "", reps: "10"}, {kg: "", reps: "10"}] },
+        { exercise: "Elevaciones Laterales", series: [{kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}] },
+        { exercise: "Extensión de Tríceps en Polea", series: [{kg: "", reps: "12"}, {kg: "", reps: "12"}, {kg: "", reps: "12"}] }
+    ],
+    "PPL: Tirón (Pull)": [
+        { exercise: "Dominadas Prone", series: [{kg: "0", reps: "8"}, {kg: "0", reps: "8"}, {kg: "0", reps: "8"}] },
+        { exercise: "Remo con Barra", series: [{kg: "", reps: "10"}, {kg: "", reps: "10"}, {kg: "", reps: "10"}] },
+        { exercise: "Jalón al Pecho", series: [{kg: "", reps: "12"}, {kg: "", reps: "12"}, {kg: "", reps: "12"}] },
+        { exercise: "Face Pull", series: [{kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}] },
+        { exercise: "Curl de Bíceps con Barra", series: [{kg: "", reps: "10"}, {kg: "", reps: "10"}, {kg: "", reps: "10"}] }
+    ],
+    "PPL: Pierna (Legs)": [
+        { exercise: "Sentadilla Libre", series: [{kg: "", reps: "6"}, {kg: "", reps: "6"}, {kg: "", reps: "6"}, {kg: "", reps: "6"}] },
+        { exercise: "Prensa de Piernas", series: [{kg: "", reps: "10"}, {kg: "", reps: "10"}, {kg: "", reps: "10"}] },
+        { exercise: "Peso Muerto Rumano (RDL)", series: [{kg: "", reps: "8"}, {kg: "", reps: "8"}, {kg: "", reps: "8"}] },
+        { exercise: "Extensión de Cuádriceps", series: [{kg: "", reps: "12"}, {kg: "", reps: "12"}, {kg: "", reps: "12"}, {kg: "", reps: "12"}] },
+        { exercise: "Elevación de Talones de Pie", series: [{kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}] }
+    ],
+    // FUERZA BASE (5x5)
+    "Fuerza Base (A)": [
+        { exercise: "Sentadilla Libre", series: [{kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}] },
+        { exercise: "Press de Banca", series: [{kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}] },
+        { exercise: "Remo con Barra", series: [{kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}] }
+    ],
+    "Fuerza Base (B)": [
+        { exercise: "Sentadilla Libre", series: [{kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}] },
+        { exercise: "Press Militar con Barra", series: [{kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}, {kg: "", reps: "5"}] },
+        { exercise: "Peso Muerto Tradicional", series: [{kg: "", reps: "5"}] }
+    ],
+    // RENDIMIENTO HYROX
+    "Hyrox Principiante (20 Min)": [
+        { exercise: "Carrera", series: [{kg: "0", reps: "45s"}, {kg: "0", reps: "45s"}, {kg: "0", reps: "45s"}, {kg: "0", reps: "45s"}] },
+        { exercise: "Sentadillas al Aire (Air Squats)", series: [{kg: "0", reps: "15"}, {kg: "0", reps: "15"}, {kg: "0", reps: "15"}, {kg: "0", reps: "15"}] },
+        { exercise: "Burpees", series: [{kg: "0", reps: "10"}, {kg: "0", reps: "10"}, {kg: "0", reps: "10"}, {kg: "0", reps: "10"}] },
+        { exercise: "Abdominales (Sit-ups)", series: [{kg: "0", reps: "20"}, {kg: "0", reps: "20"}, {kg: "0", reps: "20"}, {kg: "0", reps: "20"}] },
+        { exercise: "Descanso (Recuperación)", series: [{kg: "0", reps: "60s"}, {kg: "0", reps: "60s"}, {kg: "0", reps: "60s"}, {kg: "0", reps: "60s"}] }
+    ],
+    "Hyrox Medio (40 Min)": [
+        { exercise: "Carrera", series: [{kg: "0", reps: "800m"}, {kg: "0", reps: "800m"}, {kg: "0", reps: "800m"}, {kg: "0", reps: "800m"}] },
+        { exercise: "Descanso (Recuperación)", series: [{kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}] },
+        { exercise: "Sled Push (Trineo)", series: [{kg: "0", reps: "25m"}, {kg: "0", reps: "25m"}, {kg: "0", reps: "25m"}, {kg: "0", reps: "25m"}] },
+        { exercise: "Descanso (Recuperación)", series: [{kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}] },
+        { exercise: "Remo (Concept2)", series: [{kg: "0", reps: "500m"}, {kg: "0", reps: "500m"}, {kg: "0", reps: "500m"}, {kg: "0", reps: "500m"}] },
+        { exercise: "Descanso (Recuperación)", series: [{kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}, {kg: "0", reps: "30s"}] },
+        { exercise: "Wall Balls", series: [{kg: "4-6", reps: "25"}, {kg: "4-6", reps: "25"}, {kg: "4-6", reps: "25"}, {kg: "4-6", reps: "25"}] },
+        { exercise: "Descanso (Recuperación)", series: [{kg: "0", reps: "90s"}, {kg: "0", reps: "90s"}, {kg: "0", reps: "90s"}, {kg: "0", reps: "90s"}] }
+    ],
+    "Hyrox Avanzado (1 Hora)": [
+        { exercise: "Carrera", series: [{kg: "0", reps: "1000m"}] },
+        { exercise: "SkiErg", series: [{kg: "0", reps: "1000m"}] },
+        { exercise: "Carrera", series: [{kg: "0", reps: "1000m"}] },
+        { exercise: "Sled Push (Trineo)", series: [{kg: "152", reps: "50m"}] },
+        { exercise: "Carrera", series: [{kg: "0", reps: "1000m"}] },
+        { exercise: "Sled Pull (Trineo)", series: [{kg: "103", reps: "50m"}] },
+        { exercise: "Carrera", series: [{kg: "0", reps: "1000m"}] },
+        { exercise: "Burpee Broad Jumps", series: [{kg: "0", reps: "80m"}] }
+    ],
+    // PERDIDA DE PESO / HIIT
+    "Tabata Core & Cardio": [
+        { exercise: "Mountain Climbers", series: [{kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}] },
+        { exercise: "Jumping Jacks", series: [{kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}] },
+        { exercise: "Sentadillas al Aire (Air Squats)", series: [{kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}] },
+        { exercise: "Crunch Abdominal", series: [{kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}, {kg: "0", reps: "20s"}] }
+    ],
+    "Kettlebell Meltdown": [
+        { exercise: "Kettlebell Swings", series: [{kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}, {kg: "", reps: "15"}] },
+        { exercise: "Goblet Squats", series: [{kg: "", reps: "12"}, {kg: "", reps: "12"}, {kg: "", reps: "12"}] },
+        { exercise: "Paseo de Granjero", series: [{kg: "", reps: "40m"}, {kg: "", reps: "40m"}, {kg: "", reps: "40m"}] }
+    ],
+    // MOVILIDAD Y RECUPERACIÓN
+    "Movilidad Tren Inferior": [
+        { exercise: "Hipers (Extensiones Cadera)", series: [{kg: "0", reps: "15"}, {kg: "0", reps: "15"}, {kg: "0", reps: "15"}] },
+        { exercise: "Zancada del Corredor", series: [{kg: "0", reps: "30s/lado"}, {kg: "0", reps: "30s/lado"}] },
+        { exercise: "Movilidad de Tobillo", series: [{kg: "0", reps: "10/lado"}, {kg: "0", reps: "10/lado"}] }
+    ],
+    "Recuperación Full Body": [
+        { exercise: "Gato-Camello", series: [{kg: "0", reps: "10"}, {kg: "0", reps: "10"}] },
+        { exercise: "Rotaciones Torácicas", series: [{kg: "0", reps: "10/lado"}, {kg: "0", reps: "10/lado"}] },
+        { exercise: "Perro Boca Abajo", series: [{kg: "0", reps: "30s"}] }
+    ]
+};
+
+function confirmLoadLibraryRoutine(routineName) {
+    if (currentData.length > 0) {
+        if (!confirm(`⚠️ Tienes un entrenamiento activo no guardado.\n\n¿Deseas descartarlo y cargar "${routineName}"?`)) {
+            return;
+        }
+    }
+    
+    if (LIBRARY_ROUTINES[routineName]) {
+        currentData = JSON.parse(JSON.stringify(LIBRARY_ROUTINES[routineName]));
+        renderExercises();
+        saveCurrentDay();
+        
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('active')) {
+            toggleSidebar();
+        }
+        
+        switchTab('training');
+        alert(`🔥 Rutina de Biblioteca "${routineName}" cargada y lista para ejecutar.`);
+    }
+}
+
+/* ===========================================================
+   LIBRARY CATEGORY MODAL LOGIC
+   =========================================================== */
+const LIBRARY_CATEGORIES = {
+    'hyrox': [
+        { name: 'Hyrox Principiante (20 Min)', desc: 'EMOM 4x: Carrera, Squats, Burpees, Sit-ups' },
+        { name: 'Hyrox Medio (40 Min)', desc: '4x: Carrera, Sled, Remo, Wall Balls' },
+        { name: 'Hyrox Avanzado (1 Hora)', desc: 'Sin pausas: Carrera, SkiErg, Sled Push/Pull...' }
+    ],
+    'hipertrofia': [
+        { name: 'PPL: Empuje (Push)', desc: 'Pecho, Hombro, Tríceps (5 ejs)' },
+        { name: 'PPL: Tirón (Pull)', desc: 'Espalda, Bíceps, Cara posterior (5 ejs)' },
+        { name: 'PPL: Pierna (Legs)', desc: 'Cuádriceps, Isquios, Gemelo (5 ejs)' }
+    ],
+    'fuerza': [
+        { name: 'Fuerza Base (A)', desc: 'Sentadilla, Banca, Remo (5x5)' },
+        { name: 'Fuerza Base (B)', desc: 'Sentadilla, Militar, Peso Muerto (5x5)' }
+    ],
+    'flexibilidad': [
+        { name: 'Día 1: Caderas y Piernas', desc: '90/90, Pigeon, Couch Stretch' },
+        { name: 'Día 2: Torso y Hombros', desc: 'Pectoral, Enhebrar Aguja, Puppy Pose' },
+        { name: 'Día 3: Isquios y Gemelos', desc: 'Fascia Plantar, Perro Boca Abajo, Plegado' },
+        { name: 'Día 4: Descompresión Espinal', desc: 'Gato-Vaca, Torsión, Postura del Niño' }
+    ],
+    'hiit': [
+        { name: 'Protocolo Tabata', desc: '4 Minutos · Máxima Intensidad' },
+        { name: 'HIIT Metabólico 30/30', desc: '15 Minutos · Circuito Ágil' },
+        { name: 'Protocolo Gibala', desc: '20 Minutos · Máquina sin impacto' }
+    ]
+};
+
+const LIBRARY_VARIANTS = {
+    'hipertrofia': [
+        {
+            title: 'Opción 1: Torso/Pierna (4 Días)',
+            routines: [
+                { name: 'Día 1: Torso (Fuerza)', desc: 'Banca, Remo, Militar, Bíceps/Tríceps' },
+                { name: 'Día 2: Pierna (Cuádriceps)', desc: 'Sentadilla, Prensa, Rumano, Gemelos' },
+                { name: 'Día 3: Torso (Hipertrofia)', desc: 'Inclinado, Jalón, Laterales, Brazos' },
+                { name: 'Día 4: Pierna (Posterior)', desc: 'Femoral, Búlgara, Hip Thrust, Gemelos' }
+            ]
+        },
+        {
+            title: 'Opción 2: Híbrida PPL (5 Días)',
+            routines: [
+                { name: 'Día 1: Empuje', desc: 'Inclinado, Cruces, Hombros, Laterales, Tríceps' },
+                { name: 'Día 2: Tirón', desc: 'Dominadas, Remo, Face Pull, Bíceps' },
+                { name: 'Día 3: Pierna (Jaca)', desc: 'Jaca, Extensiones, Rumano, Prensa Gemelo' },
+                { name: 'Día 4: Torso Completo', desc: 'Convergente, Gironda, Laterales, Brazos' },
+                { name: 'Día 5: Pierna (Posterior)', desc: 'Peso Muerto, Prensa, Femoral, Gemelo Libre' }
+            ]
+        }
+    ],
+    'fuerza': [
+        {
+            title: 'Opción 1: Sistema 5x5 Clásico',
+            routines: [
+                { name: 'Día A: Empuje+ Tracción Horizontal', desc: 'Sentadilla, Banca, Remo (5 series x 5 reps)' },
+                { name: 'Día B: Empuje+ Tracción Vertical', desc: 'Sentadilla, Militar, Peso Muerto pesado' }
+            ]
+        },
+        {
+            title: 'Opción 2: Método 5/3/1 (Cíclico)',
+            routines: [
+                { name: 'Día 1: Sentadilla Principal', desc: 'Enfoque Progresiones + Accesorios Pierna' },
+                { name: 'Día 2: Banca Principal', desc: 'Enfoque Progresiones + Accesorios Torso' },
+                { name: 'Día 3: Peso Muerto Principal', desc: 'Enfoque Progresiones + Accesorios Posterior' },
+                { name: 'Día 4: Militar Principal', desc: 'Enfoque Progresiones + Accesorios Hombro' }
+            ]
+        }
+    ],
+    'fullbody': [
+        {
+            title: 'Opción 1: Volumen Múltiple',
+            routines: [
+                { name: 'Día 1: Fuerza Base', desc: 'Sentadilla, Banca, Remo, Militar, Bíceps' },
+                { name: 'Día 2: Cadena Posterior', desc: 'Rumano, Dominadas, Inclinado, Laterales, Tríceps' },
+                { name: 'Día 3: Maquinaria y Aislamiento', desc: 'Prensa, Fondos, Gironda, Face Pull, Gemelos' },
+                { name: 'Día 4: Bombeo Metabólico', desc: 'Zancadas, Jalón Estrecho, Cruces, Laterales, Core' }
+            ]
+        },
+        {
+            title: 'Opción 2: Unilateral y Continua',
+            routines: [
+                { name: 'Día 1: Unilateral y Estabilidad', desc: 'Búlgara, Inclinado MP, Supinos, Arnold, Martillo' },
+                { name: 'Día 2: Densidad y Potencia', desc: 'Prensa, Banca, Serrucho, Laterales, Francés' },
+                { name: 'Día 3: Posterior y Estiramiento', desc: 'Hip Thrust, Pullover, Aperturas, Pájaros, Gemelos' },
+                { name: 'Día 4: Tensión Continua', desc: 'Extensiones, Convergente, Remo Máquina, Leñador, Femoral' }
+            ]
+        }
+    ]
+};
+
+const LIBRARY_CATEGORY_TITLES = {
+    'hyrox': 'RENDIMIENTO HYROX',
+    'hipertrofia': 'HIPERTROFIA PPL',
+    'fuerza': 'FUERZA 5x5',
+    'flexibilidad': 'MOVILIDAD',
+    'hiit': 'PÉRDIDA DE PESO',
+    'fullbody': 'FULL BODY'
+};
+
+const LIBRARY_EXPLANATIONS = {
+    'Hyrox Principiante (20 Min)': `
+        <strong>Nivel Principiante (20 Minutos Exactos)</strong><br><br>
+        Para garantizar que esta sesión dure exactamente 20 minutos, utilizaremos un formato profesional llamado <strong>EMOM (Every Minute on the Minute)</strong>. Tienes un minuto para completar las repeticiones indicadas; el tiempo que te sobre dentro de ese minuto es tu descanso. Si tardas 40 segundos, descansas 20 segundos.<br><br>
+        <em>Estructura (4 Rondas en total de este bloque de 5 minutos):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Minuto 1:</strong> 200 metros de carrera (o 45s corriendo en el sitio a intensidad alta).</li>
+            <li style="margin-bottom:8px;"><strong>Minuto 2:</strong> 15 Sentadillas al aire (Air Squats), asegurando romper el paralelo.</li>
+            <li style="margin-bottom:8px;"><strong>Minuto 3:</strong> 10 Burpees simples (sin salto largo).</li>
+            <li style="margin-bottom:8px;"><strong>Minuto 4:</strong> 20 Abdominales (Sit-ups).</li>
+            <li style="margin-bottom:8px;"><strong>Minuto 5:</strong> Descanso total estricto de 60 segundos.</li>
+        </ul><br>
+        <strong>Tiempo total:</strong> 5 minutos x 4 rondas = 20 minutos clavados.
+    `,
+    'Hyrox Medio (40 Min)': `
+        <strong>Nivel Medio (40 Minutos)</strong><br><br>
+        Este nivel requiere un circuito de resistencia sostenida con cargas. El objetivo es mantener el mismo ritmo en la primera y en la última ronda controlando estrictamente los descansos.<br><br>
+        <em>Estructura (Completar 4 Rondas de este bloque):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Ejercicio 1:</strong> 800m de carrera moderado-fuerte. (Descanso 30s)</li>
+            <li style="margin-bottom:8px;"><strong>Ejercicio 2:</strong> 25m de Sled Push (Trineo medio) o 20 Zancadas con saco (10-15kg). (Descanso 30s)</li>
+            <li style="margin-bottom:8px;"><strong>Ejercicio 3:</strong> 500m en Remo (Row Erg). (Descanso 30s)</li>
+            <li style="margin-bottom:8px;"><strong>Ejercicio 4:</strong> 25 Wall Balls (4 a 6 kg). (Descanso 90s al terminar antes de volver a correr)</li>
+        </ul><br>
+        <strong>Tiempo total estimado:</strong> Cada ronda te tomará unos 8-9 minutos de trabajo más descansos, 40 min total.
+    `,
+    'Hyrox Avanzado (1 Hora)': `
+        <strong>Nivel Avanzado (50-60 Minutos)</strong><br><br>
+        En la categoría profesional y avanzada de Hyrox, <strong>no existen los descansos programados</strong>. El tiempo de descanso es la transición entre estaciones. Esta rutina es un Half-Hyrox pesado que simula las condiciones reales de competición bajo fatiga extrema.<br><br>
+        <em>Estructura (Simulación ininterrumpida - 1 sola gran ronda):</em><br>
+        <ol style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;">1000m Carrera a ritmo de competición (4:30 - 5:00 min/km).</li>
+            <li style="margin-bottom:8px;">1000m SkiErg (Máquina de esquí).</li>
+            <li style="margin-bottom:8px;">1000m Carrera.</li>
+            <li style="margin-bottom:8px;">50m Sled Push (Trineo pesado: 102kg a 152kg). <br><em>Pausas 10-15s intra-estación si superas el umbral anaeróbico.</em></li>
+            <li style="margin-bottom:8px;">1000m Carrera.</li>
+            <li style="margin-bottom:8px;">50m Sled Pull (Arrastre de trineo: 78kg a 103kg).</li>
+            <li style="margin-bottom:8px;">1000m Carrera.</li>
+            <li style="margin-bottom:8px;">80m Burpee Broad Jumps (Saltos longitudinales con burpee).</li>
+        </ol><br>
+        <strong>Tiempo total estimado:</strong> Manteniendo ritmos profesionales, 50-60 minutos sin pausas pasivas.
+    `,
+    'Día 1: Fuerza Base': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">El Programa "Fullbody 4 Días" (Volumen Optimizado)</strong><br><br>
+        Día 1 enfocado en cimentar una fuerza base en ejercicios multiarticulares primarios.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas (Cuádriceps):</strong> Sentadilla con barra — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press de banca plano con barra — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo con barra o en punta — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Press militar con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos (Bíceps):</strong> Curl con barra Z — 2 series.</li>
+        </ul>
+    `,
+    'Día 2: Cadena Posterior': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">El Programa "Fullbody 4 Días" (Volumen Optimizado)</strong><br><br>
+        Día 2 enfocado en potenciar la cadena posterior (tracciones y bisagra de cadera) para mejorar la postura y explosividad.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas (Femorales/Glúteo):</strong> Peso muerto rumano — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Dominadas o Jalón al pecho — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press inclinado con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Elevaciones laterales con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos (Tríceps):</strong> Extensión de tríceps en polea — 2 series.</li>
+        </ul>
+    `,
+    'Día 3: Maquinaria y Aislamiento': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">El Programa "Fullbody 4 Días" (Volumen Optimizado)</strong><br><br>
+        Día 3 diseñado para dar un ligero descanso al SNC mediante el uso de máquinas y enfoques analíticos de aislamiento muscular.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas (Cuádriceps):</strong> Prensa inclinada — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Fondos en paralelas (Dips) o Press declinado — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo Gironda (polea baja) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros (Posterior):</strong> Face pull en polea — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemelos:</strong> Elevación de talones en máquina — 3 series.</li>
+        </ul>
+    `,
+    'Día 4: Bombeo Metabólico': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">El Programa "Fullbody 4 Días" (Volumen Optimizado)</strong><br><br>
+        Día 4 orientado al bombeo muscular, compensación unilateral, y resistencia cardiovascular periférica (estrés metabólico).<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas (Global):</strong> Zancadas caminando (Lunges) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Jalón al pecho con agarre estrecho — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Cruces de polea o Flyes — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Elevaciones laterales en polea — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Core:</strong> Planchas abdominales con peso o Crunch en polea — 3 series.</li>
+        </ul>
+    `,
+    'Día 1: Unilateral y Estabilidad': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Programa Fullbody Opción 2</strong><br><br>
+        Día 1 orientado a mejorar asimetrías con trabajo unilateral y potenciar la estabilidad central.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas:</strong> Sentadilla Búlgara con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press inclinado en máquina multipower — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Dominadas supinas o Jalón supino al pecho — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Press Arnold con mancuernas sentado — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos (Bíceps):</strong> Curl martillo alterno — 2 series.</li>
+        </ul>
+    `,
+    'Día 2: Densidad y Potencia': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Programa Fullbody Opción 2</strong><br><br>
+        Día 2 busca mover altas cargas relativas con máxima seguridad (multipower y máquinas).<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas:</strong> Prensa con pies altos (foco isquios/glúteo) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press de banca plano con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo unilateral con mancuerna (serrucho) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Elevaciones laterales en polea baja — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos (Tríceps):</strong> Press francés con barra EZ — 2 series.</li>
+        </ul>
+    `,
+    'Día 3: Posterior y Estiramiento': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Programa Fullbody Opción 2</strong><br><br>
+        Día 3 da prioridad estructural y enfatiza posiciones de máximo estiramiento muscular bajo carga.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas:</strong> Hip Thrust (Empuje de cadera) con barra — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Pullover en polea alta con cuerda — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Aperturas con mancuernas en banco inclinado — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros (Posterior):</strong> Pájaros en máquina (Peck-Deck) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemelos:</strong> Elevación de talones de pie — 3 series.</li>
+        </ul>
+    `,
+    'Día 4: Tensión Continua': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Programa Fullbody Opción 2</strong><br><br>
+        Día 4 utiliza cables y poleas para mantener tensión constante y minimizar fatiga articular de la semana.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Piernas:</strong> Extensiones de cuádriceps en máquina — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press convergente (máquina) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo en máquina o gironda agarre ancho — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Core:</strong> Woodchoppers (Leñador) en polea alta — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Piernas (Isquios):</strong> Curl femoral tumbado o sentado — 3 series.</li>
+        </ul>
+    `,
+    'Día 1: Torso (Fuerza)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 1: Rutina de 4 Días (Torso/Pierna)</strong><br><br>
+        Esta distribución asegura una Frecuencia 2 (entrenar cada músculo dos veces por semana), el estándar de oro para optimizar la síntesis de proteínas.<br><br>
+        <em>Estructura del Día 1 (Enfoque Fuerza y Pesos Libres):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press de banca con barra — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo con barra o Pendlay — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Press militar con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos:</strong> Superserie de Curl de bíceps con barra + Press francés — 3 series (cada uno).</li>
+        </ul>
+    `,
+    'Día 2: Pierna (Cuádriceps)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 1: Rutina de 4 Días (Torso/Pierna)</strong><br><br>
+        Día 2 de alta intensidad enfocada al desarrollo global del tren inferior.<br><br>
+        <em>Estructura del Día 2 (Enfoque Cuádriceps y Global):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Sentadilla trasera con barra — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Prensa inclinada — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Isquios:</strong> Peso muerto rumano — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemas:</strong> Elevación de talones de pie — 4 series.</li>
+        </ul>
+    `,
+    'Día 3: Torso (Hipertrofia)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 1: Rutina de 4 Días (Torso/Pierna)</strong><br><br>
+        Tercer día de la semana para enfatizar el detalle muscular usando máquinas y dando respiro a las articulaciones tras los ejercicios libres.<br><br>
+        <em>Estructura del Día 3 (Enfoque Hipertrofia y Máquinas):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press inclinado en máquina o mancuernas — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Jalón al pecho agarre prono — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Elevaciones laterales en polea — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos:</strong> Superserie de Curl martillo + Extensión de tríceps polea — 3 series.</li>
+        </ul>
+    `,
+    'Día 4: Pierna (Posterior)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 1: Rutina de 4 Días (Torso/Pierna)</strong><br><br>
+        Último día focalizado en el desarrollo de la cadena posterior y la corrección de asimetrías mediante trabajo unilateral.<br><br>
+        <em>Estructura del Día 4 (Cadena Posterior y Unilateral):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Isquios:</strong> Curl femoral (tumbado o sentado) — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Sentadilla Búlgara — 3 series por pierna.</li>
+            <li style="margin-bottom:8px;"><strong>Glúteo/Isquios:</strong> Hip Thrust — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemelos:</strong> Elevación de talones sentado — 4 series.</li>
+        </ul>
+    `,
+    'Día 1: Empuje': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 2: Híbrida PPL (5 Días)</strong><br><br>
+        Estructura avanzada que permite aislar mejor los músculos y subir ligeramente el volumen semanal a unas 15-18 series sin fatiga sistémica.<br><br>
+        <em>Estructura del Día 1 (Pecho, Hombro, Tríceps):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press de banca inclinado con mancuernas — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Cruces de polea para pecho — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Press de hombros en máquina — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Elevaciones laterales con mancuernas — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Tríceps:</strong> Extensión de tríceps con cuerda — 3 series.</li>
+        </ul>
+    `,
+    'Día 2: Tirón': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 2: Híbrida PPL (5 Días)</strong><br><br>
+        Estructura avanzada centrada en tracción para espalda, deltoides posterior y bíceps.<br><br>
+        <em>Estructura del Día 2 (Espalda, Posterior, Bíceps):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Dominadas o Jalón al pecho — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo unilateral en máquina o mancuerna — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Face pull (Hombro posterior) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos:</strong> Curl de bíceps en banco Scott — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos:</strong> Curl de bíceps inverso en polea — 2 series.</li>
+        </ul>
+    `,
+    'Día 3: Pierna (Jaca)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 2: Híbrida PPL (5 Días)</strong><br><br>
+        Centrado en la fuerza del tren inferior, priorizando máquinas pesadas como la Jaca.<br><br>
+        <em>Estructura del Día 3 (Enfoque Cuádriceps):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Sentadilla libre o Jaca (Hack Squat) — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Extensiones de cuádriceps en máquina — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Isquios:</strong> Peso muerto rumano con mancuernas — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemelos:</strong> Elevación de gemelos en prensa — 4 series.</li>
+        </ul>
+    `,
+    'Día 4: Torso Completo': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 2: Híbrida PPL (5 Días)</strong><br><br>
+        Este día rompe el PPL para volver a generar un estímulo potente a todo el upper body con ejercicios hipertróficos de bombeo puro.<br><br>
+        <em>Estructura del Día 4 (Bombeo Metabólico):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press plano en máquina convergente — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo Gironda en polea baja — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Hombro:</strong> Elevaciones laterales en polea — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Brazos:</strong> Superserie de Bíceps y Tríceps en polea — 3 series.</li>
+        </ul>
+    `,
+    'Día 5: Pierna (Posterior)': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Planificación 2: Híbrida PPL (5 Días)</strong><br><br>
+        Cierre de la semana con máximo estrés a la cadena posterior y tirones de suelo pesados.<br><br>
+        <em>Estructura del Día 5 (Enfoque Cadena Posterior):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Isquios:</strong> Peso muerto convencional o Sumo — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Prensa con pies altos — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Isquios:</strong> Curl femoral sentado — 4 series.</li>
+            <li style="margin-bottom:8px;"><strong>Gemelos:</strong> Elevación de gemelos libre — 4 series.</li>
+        </ul>
+    `,
+    'Día A: Empuje+ Tracción Horizontal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Sistema 5x5 (Progresión Lineal)</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>❌ El Fallo Muscular:</strong> Punto en el que eres incapaz de hacer otra repetición con buena técnica. En fuerza "fríe" el Sistema Nervioso Central (SNC).<br><br>
+            <strong>✅ El RIR (Repeticiones en Reserva):</strong> Tu medidor interno. Si haces una serie RIR 2, significa que podrías haber hecho 2 repeticiones más antes de fallar. ¡La magia de la fuerza ocurre en RIR 1-2!
+        </div>
+        Es la rutina por excelencia para construir fuerza desde cero (ej: L-M-V). Mismo peso, descansos pesados (3-5 min). El objetivo es añadir 2,5kg respecto a la sesión anterior.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Sentadilla trasera con barra — 5 series x 5 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Pecho:</strong> Press de banca plano con barra — 5 series x 5 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda:</strong> Remo con barra — 5 series x 5 reps.</li>
+        </ul>
+    `,
+    'Día B: Empuje+ Tracción Vertical': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Sistema 5x5 (Progresión Lineal)</strong><br><br>
+        Día de alta carga neural, introduciendo el Rey de los levantamientos para la fuerza bruta de la cadena posterior.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Pierna:</strong> Sentadilla trasera con barra — 5 series x 5 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Hombros:</strong> Press Militar con barra — 5 series x 5 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Espalda Posterior:</strong> Peso Muerto — 1 serie PESADA x 5 reps.</li>
+        </ul>
+        <br><em>Recomendación de IRONLOG:</em> Si controlas esta rutina y no rebasas el RIR 1, puedes añadir alguna serie de tracción vertical libre (ej: 2 series de Dominadas) si cuentas con energía al final de la sesión.
+    `,
+    'Día 1: Sentadilla Principal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Método 5/3/1 (Fuerza a Largo Plazo)</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>❌ El Fallo Muscular:</strong> Punto en el que eres incapaz de hacer otra repetición con buena técnica. En fuerza "fríe" el Sistema Nervioso Central (SNC).<br><br>
+            <strong>✅ El RIR (Repeticiones en Reserva):</strong> Tu medidor interno. Si haces una serie RIR 2, significa que podrías haber hecho 2 repeticiones más antes de fallar. ¡La magia de la fuerza ocurre en RIR 1-2!
+        </div>
+        Ciclos de 4 semanas. Un movimiento principal y posterior trabajo accesorio de hipertrofia.<br><br>
+        <em>Estructura de la Sesión de Pierna:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Principal:</strong> Sentadilla Trasera — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorio (Hipertrofia):</strong> Prensa de piernas — 3 series x 10 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorios:</strong> Sentadilla Búlgara, Elevación gemelos libre.</li>
+        </ul>
+        <br><em>Dinámica del Levantamiento Principal:</em><br>
+        Semana 1: 3 x 5 reps. | Semana 2: 3 x 3 reps. | Semana 3: 1x5, 1x3, 1x1 (récord seguro). | Semana 4: Descarga ligera.
+    `,
+    'Día 2: Banca Principal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Método 5/3/1 (Fuerza a Largo Plazo)</strong><br><br>
+        Día dedicado totalmente a dominar las palancas del Press de Banca.<br><br>
+        <em>Estructura de la Sesión de Empuje:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Principal:</strong> Press de Banca — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorio (Hipertrofia):</strong> Press Inclinado con mancuernas — 3 series x 10 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorios:</strong> Cruces en polea baja, Fondos en paralelas, Extensión tríceps.</li>
+        </ul>
+        <br><em>Dinámica del Levantamiento Principal:</em><br>
+        Semana 1: 3 x 5 reps. | Semana 2: 3 x 3 reps. | Semana 3: 1x5, 1x3, 1x1 (récord seguro). | Semana 4: Descarga ligera.
+    `,
+    'Día 3: Peso Muerto Principal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Método 5/3/1 (Fuerza a Largo Plazo)</strong><br><br>
+        Día intensivo para la cadena posterior inferior y trapecios de acero.<br><br>
+        <em>Estructura de la Sesión de Tracción Fuerte:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Principal:</strong> Peso Muerto (Convencional o Sumo) — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorio (Hipertrofia):</strong> Jalón al Pecho o Dominadas lastradas — 3 series x 10 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorios:</strong> Curl Femoral, Remo con mancuerna, Remo Gironda.</li>
+        </ul>
+        <br><em>Dinámica del Levantamiento Principal:</em><br>
+        Semana 1: 3 x 5 reps. | Semana 2: 3 x 3 reps. | Semana 3: 1x5, 1x3, 1x1 (récord seguro). | Semana 4: Descarga ligera.
+    `,
+    'Día 4: Militar Principal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Método 5/3/1 (Fuerza a Largo Plazo)</strong><br><br>
+        Aislamiento final del empuje vertical para terminar el microciclo sin estresar el sistema periférico.<br><br>
+        <em>Estructura de la Sesión de Hombros:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Principal:</strong> Press Militar de pie con barra — 3 series.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorio (Hipertrofia):</strong> Press Arnold sentado — 3 series x 10 reps.</li>
+            <li style="margin-bottom:8px;"><strong>Accesorios:</strong> Elevaciones laterales con mancuerna, Face pull polea alta, Extensión tríceps copa.</li>
+        </ul>
+        <br><em>Dinámica del Levantamiento Principal:</em><br>
+        Semana 1: 3 x 5 reps. | Semana 2: 3 x 3 reps. | Semana 3: 1x5, 1x3, 1x1 (récord seguro). | Semana 4: Descarga ligera.
+    `,
+    'Protocolo Tabata': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">1. El Protocolo Tabata Original (4 Minutos)</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🔥 El Secreto del EPOC:</strong> El HIIT brutal no busca que sudes, busca generar Exceso de Consumo de Oxígeno (EPOC). Al llegar al 85-95% de FC Máxima, tu cuerpo quema miles de calorías extras durante las siguientes 24h solo tratando de recuperarse del esfuerzo y volver al punto basal.<br><br>
+            <strong>❌ El Error del HIIT Lento:</strong> Un "HIIT de 45 mins" fisiológicamente no existe ni es alta intensidad. Si es breve, debes sentir que es absolutamente letal e insostenible en el minuto 4.
+        </div>
+        El estándar de oro para disparar el metabolismo en tiempo récord. Ideal para realizar con un solo ejercicio explosivo puro (Burpees, Squat Jumps).<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Rondas:</strong> 8 rondas totales ininterrumpidas.</li>
+            <li style="margin-bottom:8px;"><strong>Trabajo:</strong> 20 segundos a <b>máxima capacidad absoluta</b>.</li>
+            <li style="margin-bottom:8px;"><strong>Descanso:</strong> 10 segundos de descanso total estricto.</li>
+        </ul>
+        <br><em>Duración Total: 4 Minutos exactos y agónicos.</em>
+    `,
+    'HIIT Metabólico 30/30': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">2. El HIIT Metabólico 30/30 (15 Minutos)</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🔥 El Secreto del EPOC:</strong> El HIIT brutal no busca que sudes, busca generar Exceso de Consumo de Oxígeno (EPOC). Al llegar al 85-95% de FC Máxima, tu cuerpo quema miles de calorías extras durante las siguientes 24h solo tratando de recuperarse del esfuerzo y volver al punto basal.<br><br>
+            <strong>❌ El Error del HIIT Lento:</strong> Un "HIIT de 45 mins" fisiológicamente no existe ni es alta intensidad. Si es breve, debes sentir que es absolutamente letal e insostenible en el minuto 4.
+        </div>
+        Circuito que equilibra perfectamente el trabajo muscular del cuerpo con la recuperación técnica rápida.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Formato y Tiempos:</strong> 3 Rondas Completas (30s de TRABAJO / 30s de DESCANSO activo).</li>
+            <li style="margin-bottom:8px;"><strong>1. Jumping Jacks</strong> (esfuerzo cardiovascular elástico).</li>
+            <li style="margin-bottom:8px;"><strong>2. Mountain Climbers</strong> (dinámica horizontal en plancha).</li>
+            <li style="margin-bottom:8px;"><strong>3. Squat Jumps</strong> (potencia explosiva vertical con peso corporal).</li>
+            <li style="margin-bottom:8px;"><strong>4. High Knees</strong> (rodillas arriba al pecho rápido).</li>
+            <li style="margin-bottom:8px;"><strong>5. Skater Jumps</strong> (patinadores laterales y equilibrados).</li>
+        </ul>
+        <br><em>Nota de IRONLOG:</em> Cuando finalices la 5ª estación (Skater Jumps), suma 60 segundos de descanso total extra antes de arrancar la ronda 2 de tu circuito.
+    `,
+    'Protocolo Gibala': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">3. El Protocolo Gibala en Máquina (20 Minutos)</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🔥 El Secreto del EPOC:</strong> El HIIT brutal no busca que sudes, busca generar Exceso de Consumo de Oxígeno (EPOC). Al llegar al 85-95% de FC Máxima, tu cuerpo quema miles de calorías extras durante las siguientes 24h solo tratando de recuperarse del esfuerzo y volver al punto basal.<br><br>
+            <strong>❌ El Error del HIIT Lento:</strong> Un "HIIT de 45 mins" fisiológicamente no existe ni es alta intensidad. Si es breve, debes sentir que es absolutamente letal e insostenible en el minuto 4.
+        </div>
+        Puro rendimiento atlético, sin impacto para las articulaciones pero destructivo para los pulmones. Se realiza en cinta sin motor, Assault Bike, Remo Concept2 o SkiErg.<br><br>
+        <em>Estructura de la Sesión:</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Acondicionamiento:</strong> 3 minutos de calentamiento progresivo y ligero.</li>
+            <li style="margin-bottom:8px;"><strong>Rondas:</strong> 10 rondas controladas de forma implacable por el reloj.</li>
+            <li style="margin-bottom:8px;"><strong>Esfuerzo Máximo:</strong> 60 segundos a intensidad sub-máxima (RPE 8-9, donde te faltan las palabras).</li>
+            <li style="margin-bottom:8px;"><strong>Recuperación Activa:</strong> 75 segundos pedaleando, remando o esquiando MUY suave y profundo.</li>
+            <li style="margin-bottom:8px;"><strong>Enfriamiento final:</strong> 2 minutos de rodaje regenerativo.</li>
+        </ul>
+    `,
+    'Día 1: Caderas y Piernas': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Día 1: Caderas Libres y Tren Inferior</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🧘‍♂️ Para qué sirve:</strong> Vital para mejorar la profundidad en la sentadilla pesada, optimizar tu zancada en la carrera bajo fatiga (estilo Hyrox) y liberar la tensión lumbar que se acumula por el sedentarismo o el entrenamiento de fuerza.
+        </div>
+        <em>La Rutina (10-15 min):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Transiciones 90/90:</strong> Sentado, rotar ambas rodillas de lado a lado manteniendo ángulos rectos (10 repeticiones controladas).</li>
+            <li style="margin-bottom:8px;"><strong>Pigeon Pose (Postura de la Paloma):</strong> Una pierna cruzada por delante en el suelo, la otra estirada hacia atrás (90 segundos por pierna).</li>
+            <li style="margin-bottom:8px;"><strong>Couch Stretch (Estiramiento de sofá):</strong> Rodilla apoyada en la pared o un banco, pie hacia arriba y torso erguido para estirar el psoas y el cuádriceps (60 segundos por pierna).</li>
+        </ul>
+        <br><em>Consejo profesional de IRONLOG:</em> En la Postura de la Paloma, si sientes dolor en la rodilla, acerca el pie delantero hacia tu ingle para cerrar el ángulo. Respira siempre hacia el abdomen para relajar el sistema nervioso.
+    `,
+    'Día 2: Torso y Hombros': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Día 2: Apertura Torácica y Hombros</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🧘‍♂️ Para qué sirve:</strong> Contrarresta la postura encorvada que adoptamos frente a las pantallas y mejora drásticamente la movilidad para realizar ejercicios seguros por encima de la cabeza (como el Press Militar o los Wall Balls).
+        </div>
+        <em>La Rutina (10-15 min):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Estiramiento de Pectoral en marco:</strong> Codo apoyado a 90 grados contra el marco de una puerta, girando el torso en dirección opuesta (60 seg por lado).</li>
+            <li style="margin-bottom:8px;"><strong>Thread the Needle (Enhebrar la aguja):</strong> En cuadrupedia, deslizar un brazo por debajo del torso hasta apoyar el hombro en el suelo, rotando la parte alta de la espalda (10 reps fluidas por lado).</li>
+            <li style="margin-bottom:8px;"><strong>Puppy Pose (Postura del Cachorro):</strong> De rodillas, caderas sobre las rodillas y brazos estirados al frente, dejando caer el pecho hacia el suelo (90 segundos).</li>
+        </ul>
+        <br><em>Consejo profesional de IRONLOG:</em> Durante el Puppy Pose, mantén el abdomen ligeramente contraído. El objetivo es que la extensión ocurra en la zona dorsal (alta espalda), no que colapse tu zona lumbar.
+    `,
+    'Día 3: Isquios y Gemelos': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Día 3: Cadena Posterior y Fascia</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🧘‍♂️ Para qué sirve:</strong> Previene roturas fibrilares en sprints, alivia la fascitis plantar y mejora tu flexibilidad para alcanzar la barra cómodamente en el Peso Muerto. Libera la tensión desde la planta del pie hasta la nuca.
+        </div>
+        <em>La Rutina (10-15 min):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Masaje fascial plantar:</strong> Pisar una pelota de tenis o lacrosse y masajear la planta del pie aplicando peso (2 minutos por pie).</li>
+            <li style="margin-bottom:8px;"><strong>Perro Boca Abajo (Downward Dog):</strong> Empujar el suelo con las manos, caderas al techo. Pedalea suavemente doblando una rodilla y estirando la otra para focalizar en los gemelos (60 segundos).</li>
+            <li style="margin-bottom:8px;"><strong>Plegado hacia adelante:</strong> Tocar las puntas de los pies sentado con las piernas estiradas al frente (90 segundos).</li>
+        </ul>
+        <br><em>Consejo profesional de IRONLOG:</em> En el plegado hacia adelante, no fuerces llegar a la punta del pie si tu espalda se curva en exceso como un caparazón; es mucho mejor flexionar un poquito las rodillas y mantener la espalda neutra.
+    `,
+    'Día 4: Descompresión Espinal': `
+        <strong style="font-size: 1.1em; color: var(--accent-primary);">Día 4: Descompresión Espinal y Flujo Total</strong><br><br>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 20px; font-size: 0.95em;">
+            <strong>🧘‍♂️ Para qué sirve (Día de Recuperación):</strong> Actúa como un "reset" completo para tu Sistema Nervioso Central (SNC). Es ideal para tu día de descanso absoluto, ya que reduce los niveles de cortisol y mejora drásticamente la calidad del sueño.
+        </div>
+        <em>La Rutina (15 min):</em><br>
+        <ul style="margin-top:10px; margin-left:20px;">
+            <li style="margin-bottom:8px;"><strong>Gato-Vaca (Cat-Cow):</strong> En cuadrupedia, arquear y flexionar la columna (15 repeticiones muy lentas).</li>
+            <li style="margin-bottom:8px;"><strong>Torsión espinal supina:</strong> Tumbado boca arriba, rodilla al pecho y cruzarla por encima del cuerpo hacia el suelo opuesto, mirando hacia la mano contraria (90 seg por lado).</li>
+            <li style="margin-bottom:8px;"><strong>Postura del Niño (Child's Pose):</strong> Rodillas separadas, glúteos a los talones y brazos estirados al frente (2 minutos).</li>
+        </ul>
+        <br><em>Consejo profesional de IRONLOG:</em> Cierra los ojos durante toda esta secuencia. Concéntrate en hacer que cada exhalación dure exactamente el doble que tu inhalación para maximizar el estado parasimpático.
+    `
+};
+
+function openLibraryCategory(categoryId) {
+    let routines = LIBRARY_CATEGORIES[categoryId];
+    const variants = LIBRARY_VARIANTS[categoryId];
+    
+    // Si tiene variantes, auto-selecciona la Variante 1
+    if (variants && variants.length > 0) {
+        routines = variants[0].routines;
+    }
+    
+    let titleParts = (LIBRARY_CATEGORY_TITLES[categoryId] || 'RUTINAS').split(' ');
+    const lastWord = titleParts.pop();
+    const formattedTitle = titleParts.join(' ') + ' <span class="neon-text">' + lastWord + '</span>';
+    
+    if (!routines) return;
+    
+    document.getElementById('library-grid-view').style.display = 'none';
+    document.getElementById('library-detail-view').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    document.getElementById('lib-detail-title').innerHTML = formattedTitle;
+    
+    // Configurar el selector de Variantes en la cabecera si existe
+    const variantSelector = document.getElementById('lib-variant-selector');
+    if (variants && variants.length > 0) {
+        variantSelector.style.display = 'flex';
+        variantSelector.style.gap = '10px';
+        variantSelector.style.overflowX = 'auto';
+        
+        let variantHtml = '';
+        variants.forEach((vr, idx) => {
+            const activeStyle = idx === 0 
+                ? 'background: var(--accent-primary); color: #fff; border-color: var(--accent-primary);' 
+                : 'background: var(--bg-body); color: var(--text-secondary); border: 1px solid var(--border-light);';
+            variantHtml += `<button class="lib-variant-btn" onclick="renderLibraryVariant('${categoryId}', ${idx})" style="padding: 10px 18px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; outline: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); ${activeStyle}">${vr.title}</button>`;
+        });
+        variantSelector.innerHTML = variantHtml;
+    } else {
+        variantSelector.style.display = 'none';
+        variantSelector.innerHTML = '';
+    }
+    
+    renderLibraryTimeline(routines);
+}
+
+function renderLibraryVariant(categoryId, variantIdx) {
+    const variants = LIBRARY_VARIANTS[categoryId];
+    if (!variants || !variants[variantIdx]) return;
+    
+    const routines = variants[variantIdx].routines;
+    
+    const buttons = document.querySelectorAll('.lib-variant-btn');
+    buttons.forEach((btn, idx) => {
+        if (idx === variantIdx) {
+            btn.style.background = 'var(--accent-primary)';
+            btn.style.color = '#fff';
+            btn.style.borderColor = 'var(--accent-primary)';
+        } else {
+            btn.style.background = 'var(--bg-body)';
+            btn.style.color = 'var(--text-secondary)';
+            btn.style.border = '1px solid var(--border-light)';
+        }
+    });
+    
+    renderLibraryTimeline(routines);
+}
+
+function renderLibraryTimeline(routines) {
+    const container = document.getElementById('lib-detail-timeline');
+    
+    let finalHtml = `<div class="ramp-timeline-container"><div class="ramp-timeline-line"></div>`;
+    
+    routines.forEach((rtn, index) => {
+        const delay = index * 0.15;
+        const explanation = LIBRARY_EXPLANATIONS[rtn.name] || '<em>Detalles próximos a añadir.</em>';
+        
+        finalHtml += `
+            <div class="ramp-card" style="animation-delay: ${delay}s; border: 1px solid var(--border-light); background: var(--bg-card); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">
+                <div class="ramp-info" style="margin-left: 15px;">
+                    <h3 class="ramp-title" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+                        <span class="ramp-letter" style="background: rgba(217, 119, 6, 0.2); color: var(--accent-primary); border-radius: 50%; width: 35px; height: 35px; line-height: 35px; text-align: center; display: inline-block; font-size: 1rem; margin-right: 10px;">
+                            <i class="fas fa-dumbbell"></i>
+                        </span> 
+                        ${rtn.name}
+                    </h3>
+                    <div class="ramp-desc" style="font-size: 1.05rem; line-height: 1.7; color: var(--text-secondary);">
+                        ${explanation}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    finalHtml += `</div>`;
+    container.innerHTML = finalHtml;
+}
+
+function closeLibraryDetailView() {
+    document.getElementById('library-detail-view').style.display = 'none';
+    document.getElementById('library-grid-view').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleLoadLibraryFromModal(routineName) {
+    closeLibraryCategoryModal();
+    confirmLoadLibraryRoutine(routineName);
 }

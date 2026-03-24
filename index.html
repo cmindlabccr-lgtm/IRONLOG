@@ -24,6 +24,73 @@
 
 <body>
 
+    <!-- ================== ONBOARDING ================== -->
+    <div id="onboarding-overlay" class="onboarding-overlay" style="display: none;">
+        <div class="onboarding-step active" id="ob-step-1">
+            <h1 class="ob-logo">IRON<span class="neon-text">LOG</span></h1>
+            <p class="ob-subtitle">Bienvenido a IronLog.</p>
+            <div class="ob-input-group">
+                <input type="text" id="ob-name" placeholder="Tu nombre..." autocomplete="off">
+            </div>
+            <button class="ob-btn" onclick="nextObStep(2)">COMENZAR</button>
+        </div>
+
+        <div class="onboarding-step" id="ob-step-2">
+            <h2 class="ob-title">Datos Biométricos</h2>
+            <p class="ob-subtitle">Para calcular tus requerimientos calóricos.</p>
+            <div class="ob-grid" style="margin-top: 20px;">
+                <div class="ob-input-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="ob-weight" placeholder="Ej: 75">
+                </div>
+                <div class="ob-input-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" id="ob-height" placeholder="Ej: 180">
+                </div>
+                <div class="ob-input-group">
+                    <label>Edad</label>
+                    <input type="number" id="ob-age" placeholder="Ej: 25">
+                </div>
+                <div class="ob-input-group">
+                    <label>Sexo</label>
+                    <select id="ob-gender" class="mini-select" style="width: 100%;">
+                        <option value="male">Hombre</option>
+                        <option value="female">Mujer</option>
+                    </select>
+                </div>
+            </div>
+            <button class="ob-btn" style="margin-top: 30px;" onclick="nextObStep(3)">SIGUIENTE</button>
+        </div>
+
+        <div class="onboarding-step" id="ob-step-3">
+            <h2 class="ob-title">Configuración de Objetivos</h2>
+            <p class="ob-subtitle">Último paso para finalizar tu perfil.</p>
+            
+            <div class="ob-input-group" style="text-align: left; margin-top: 20px;">
+                <label>Nivel de Actividad Diaria</label>
+                <select id="ob-activity" class="mini-select" style="width: 100%;">
+                    <option value="1.2">Sedentario (Oficina)</option>
+                    <option value="1.375">Ligero (1-3 días/sem)</option>
+                    <option value="1.55" selected>Moderado (3-5 días/sem)</option>
+                    <option value="1.725">Intenso (6-7 días/sem)</option>
+                </select>
+            </div>
+
+            <div class="ob-input-group" style="margin-top: 15px; text-align: left;">
+                <label>Objetivo Principal</label>
+                <select id="ob-goal" class="mini-select" style="width: 100%;">
+                    <option value="lose">Perder Grasa / Definir</option>
+                    <option value="maintain">Mantenimiento</option>
+                    <option value="gain" selected>Ganar Masa Muscular</option>
+                    <option value="recomp">Recomposición Corporal</option>
+                </select>
+            </div>
+
+            <button class="ob-btn ob-btn-final" style="margin-top: 30px;" onclick="finishOnboarding()">FINALIZAR</button>
+        </div>
+    </div>
+    <!-- ================================================ -->
+
     <div id="backdrop" class="backdrop"></div>
     <div class="particles-container" id="particles-container"></div>
 
@@ -42,6 +109,11 @@
             <button class="nav-item special-item" onclick="switchTab('profile'); closeSidebar()">
                 <div class="nav-icon"><i class="fas fa-id-card"></i></div>
                 <span class="nav-text">PERFIL DE ATLETA</span>
+            </button>
+            
+            <button class="nav-item special-item" style="background: rgba(217, 119, 6, 0.1); border-left: 3px solid var(--gold-accent);" onclick="switchTab('library'); closeSidebar()">
+                <div class="nav-icon"><i class="fas fa-book" style="color: var(--gold-accent);"></i></div>
+                <span class="nav-text" style="color: var(--gold-accent);">ENTRENAMIENTOS</span>
             </button>
 
 
@@ -106,7 +178,15 @@
                         <div class="card-overlay"></div>
                         <div class="card-content">
                             <span class="magazine-title">ENTRENAR<br>HOY</span>
+                            <i class="fas fa-bolt magazine-icon"></i>
+                        </div>
+                    </a>
+
+                    <a href="#" class="dashboard-card card-library" onclick="switchTab('library')">
+                        <div class="card-overlay"></div>
+                        <div class="card-content">
                             <i class="fas fa-dumbbell magazine-icon"></i>
+                            <span class="magazine-title">ENTRENAMIENTOS</span>
                         </div>
                     </a>
 
@@ -175,15 +255,110 @@
                 </section>
             </main>
 
-            <!-- ================= WARMUP TAB (R.A.M.P) ================= -->
-            <main id="warmup" class="tab-content" style="position: relative; padding-bottom: 90px;">
+            <!-- ================= BIBLIOTECA IRONLOG (RUTINAS) ================= -->
+            <main id="library" class="tab-content" style="padding-bottom: 90px;">
                 <header class="section-header">
                     <button class="nav-back-btn" onclick="switchTab('dashboard')">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 style="color: var(--text-primary);"><i class="fas fa-fire-alt"
-                            style="color: var(--accent-primary);"></i> Protocolo R.A.M.P.</h2>
+                    <h2>ENTRENAMIENTOS</h2>
                 </header>
+
+                <!-- VISTA 1: GRID PRINCIPAL -->
+                <div id="library-grid-view">
+                    <div class="library-hero">
+                        <h2>ENTRENAMIENTO <span class="neon-text">HÍBRIDO</span></h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                            Explora nuestras secuencias teóricas de entrenamiento.
+                        </p>
+                    </div>
+
+                    <div class="library-grid">
+                    <!-- CARD 1: HYROX -->
+                    <div class="library-card" onclick="openLibraryCategory('hyrox')">
+                        <div class="library-card-bg" style="background-image: url('https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">HYROX</h3>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2: HIPERTROFIA -->
+                    <div class="library-card" onclick="openLibraryCategory('hipertrofia')">
+                        <div class="library-card-bg" style="background-image: url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=1470&auto=format&fit=crop');"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">HIPERTROFIA</h3>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: FUERZA -->
+                    <div class="library-card" onclick="openLibraryCategory('fuerza')">
+                        <div class="library-card-bg" style="background-image: url('https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1469&auto=format&fit=crop'); background-position: top;"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">FUERZA</h3>
+                        </div>
+                    </div>
+
+                    <!-- CARD 4: MOVILIDAD -->
+                    <div class="library-card" onclick="openLibraryCategory('flexibilidad')">
+                        <div class="library-card-bg" style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=1440&auto=format&fit=crop');"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">FLEXIBILIDAD</h3>
+                        </div>
+                    </div>
+
+                    <!-- CARD 5: HIIT -->
+                    <div class="library-card" onclick="openLibraryCategory('hiit')">
+                        <div class="library-card-bg" style="background-image: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?q=80&w=1470&auto=format&fit=crop');"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">H.I.T</h3>
+                        </div>
+                    </div>
+
+                    <!-- CARD 6: FULL BODY / METCON -->
+                    <div class="library-card" onclick="openLibraryCategory('fullbody')">
+                        <div class="library-card-bg" style="background-image: url('https://images.pexels.com/photos/2247179/pexels-photo-2247179.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');"></div>
+                        <div class="library-card-overlay">
+                            <h3 class="library-card-title">FULL BODY</h3>
+                        </div>
+                    </div>
+                </div> <!-- END grid -->
+                </div> <!-- END library-grid-view (VISTA 1) -->
+
+                <!-- VISTA 2: TIMELINE (DETALLE DE CATEGORÍA) -->
+                <div id="library-detail-view" style="display: none; width: 100%; max-width: 800px; margin: 0 auto; padding: 10px 0;">
+                    <header style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 30px;">
+                        <button onclick="closeLibraryDetailView()" style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div style="text-align: left;">
+                            <h2 id="lib-detail-title" style="margin: 0; font-size: 1.6rem; font-weight: 800; color: var(--text-primary); text-transform: uppercase;">RUTINAS</h2>
+                            <p id="lib-detail-desc" style="margin: 5px 0 0 0; font-size: 0.95rem; color: var(--text-muted);">Desliza para explorar la categoría entera</p>
+                        </div>
+                    </header>
+                    <div id="lib-variant-selector" style="display: none; padding-bottom: 20px; margin-bottom: 10px;">
+                        <!-- JS Injected Variant Buttons -->
+                    </div>
+                    <div id="lib-detail-timeline" style="padding-bottom: 40px;">
+                        <!-- JS Injected Timeline -->
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- ================= WARMUP TAB (R.A.M.P) ================= -->
+            <main id="warmup" class="tab-content" style="position: relative; padding: 0; padding-bottom: 90px;">
+                <!-- HERO VISUAL -->
+                <div style="position: relative; width: 100%; height: 240px; overflow: hidden; flex-shrink: 0;">
+                    <div style="position: absolute; inset: 0; background-image: url('warmup_bg.png'); background-size: cover; background-position: center 40%; filter: brightness(0.5) saturate(1.2);"></div>
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 40%, var(--bg-primary) 100%);"></div>
+                    <div style="position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; padding: 0 24px; z-index: 2;">
+                        <p style="font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 6px; font-weight: 700;">PROTOCOLO R.A.M.P.</p>
+                        <h2 style="font-size: 1.35rem; font-weight: 900; color: #fff; line-height: 1.25; text-shadow: 0 2px 20px rgba(0,0,0,0.7); margin: 0;">Prepara el motor antes<br>de encender el turbo.</h2>
+                    </div>
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')" style="position: absolute; top: 15px; left: 15px; z-index: 3; background: rgba(0,0,0,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
 
                 <div style="padding: 15px;">
                     <!-- Educational Collapsible-style Banner -->
@@ -428,13 +603,76 @@
                 </section>
             </main>
 
-            <main id="philosophy" class="tab-content">
-                <header class="section-header">
-                    <button class="nav-back-btn" onclick="switchTab('dashboard')">
+            <main id="philosophy" class="tab-content" style="position: relative; padding: 0;">
+                <!-- HERO VISUAL: ocupa todo el ancho del contenedor -->
+                <div style="
+                    position: relative;
+                    width: 100%;
+                    height: 280px;
+                    overflow: hidden;
+                    flex-shrink: 0;
+                ">
+                    <!-- Imagen de fondo -->
+                    <div style="
+                        position: absolute;
+                        inset: 0;
+                        background-image: url('philosophy_bg.png');
+                        background-size: cover;
+                        background-position: center 30%;
+                        filter: brightness(0.55) saturate(1.2);
+                    "></div>
+                    <!-- Gradiente inferior para fusionar con el contenido -->
+                    <div style="
+                        position: absolute;
+                        inset: 0;
+                        background: linear-gradient(
+                            to bottom,
+                            rgba(0,0,0,0.05) 0%,
+                            rgba(0,0,0,0) 35%,
+                            var(--bg-primary) 100%
+                        );
+                    "></div>
+                    <!-- Texto encima -->
+                    <div style="
+                        position: absolute;
+                        bottom: 28px;
+                        left: 0;
+                        right: 0;
+                        text-align: center;
+                        padding: 0 24px;
+                        z-index: 2;
+                    ">
+                        <p style="
+                            font-size: 0.65rem;
+                            letter-spacing: 0.4em;
+                            text-transform: uppercase;
+                            color: var(--accent-primary);
+                            margin-bottom: 8px;
+                            font-weight: 700;
+                        ">MENTALIDAD DE ÉLITE</p>
+                        <h2 style="
+                            font-size: 1.45rem;
+                            font-weight: 900;
+                            color: #fff;
+                            line-height: 1.25;
+                            text-shadow: 0 2px 20px rgba(0,0,0,0.7);
+                            margin: 0;
+                        ">No es la montaña la que<br>debes vencer, sino a ti mismo.</h2>
+                    </div>
+                    <!-- Botón de vuelta atrás -->
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')" style="
+                        position: absolute;
+                        top: 15px;
+                        left: 15px;
+                        z-index: 3;
+                        background: rgba(0,0,0,0.45);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255,255,255,0.1);
+                    ">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2>Guía de Mentalidad</h2>
-                </header>
+                </div>
 
                 <section class="mental-guide-container">
                     <!-- 1. Botón de Empujón (Boost) -->
@@ -715,13 +953,19 @@
                 </section>
             </main>
 
-            <main id="nutrition" class="tab-content">
-                <header class="section-header">
-                    <button class="nav-back-btn" onclick="switchTab('dashboard')">
+            <main id="nutrition" class="tab-content" style="position: relative; padding: 0;">
+                <!-- HERO VISUAL -->
+                <div style="position: relative; width: 100%; height: 240px; overflow: hidden; flex-shrink: 0;">
+                    <div style="position: absolute; inset: 0; background-image: url('nutrition_bg.png'); background-size: cover; background-position: center 50%; filter: brightness(0.5) saturate(1.1);"></div>
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 40%, var(--bg-primary) 100%);"></div>
+                    <div style="position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; padding: 0 24px; z-index: 2;">
+                        <p style="font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 6px; font-weight: 700;">LABORATORIO DE NUTRICIÓN</p>
+                        <h2 style="font-size: 1.35rem; font-weight: 900; color: #fff; line-height: 1.25; text-shadow: 0 2px 20px rgba(0,0,0,0.7); margin: 0;">Eres lo que comes.<br>Come para rendir.</h2>
+                    </div>
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')" style="position: absolute; top: 15px; left: 15px; z-index: 3; background: rgba(0,0,0,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2>Laboratorio de Nutrición</h2>
-                </header>
+                </div>
 
                 <section class="card">
                     <h3><i class="fas fa-calculator"></i> CALCULADORA DE COMBUSTIBLE</h3>
@@ -1002,13 +1246,19 @@
                 </div>
             </main>
 
-            <main id="supplements" class="tab-content">
-                <header class="section-header">
-                    <button class="nav-back-btn" onclick="switchTab('dashboard')">
+            <main id="supplements" class="tab-content" style="position: relative; padding: 0;">
+                <!-- HERO VISUAL -->
+                <div style="position: relative; width: 100%; height: 240px; overflow: hidden; flex-shrink: 0;">
+                    <div style="position: absolute; inset: 0; background-image: url('supplements_bg.png'); background-size: cover; background-position: center 40%; filter: brightness(0.5) saturate(1.2);"></div>
+                    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 40%, var(--bg-primary) 100%);"></div>
+                    <div style="position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; padding: 0 24px; z-index: 2;">
+                        <p style="font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent-primary); margin-bottom: 6px; font-weight: 700;">ARSENAL NUTRICIONAL</p>
+                        <h2 style="font-size: 1.35rem; font-weight: 900; color: #fff; line-height: 1.25; text-shadow: 0 2px 20px rgba(0,0,0,0.7); margin: 0;">Los detalles separan<br>al atleta del campeón.</h2>
+                    </div>
+                    <button class="nav-back-btn" onclick="switchTab('dashboard')" style="position: absolute; top: 15px; left: 15px; z-index: 3; background: rgba(0,0,0,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2>Suplementación</h2>
-                </header>
+                </div>
                 <div class="logbook-container">
                     <section class="card" style="border-left: 4px solid #06b6d4;">
                         <h3 style="color: #0891b2; display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -2365,8 +2615,7 @@
         </div>
     </div>
 
-
-
+    
     <script src="script.js"></script>
 </body>
 

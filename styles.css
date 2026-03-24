@@ -587,9 +587,9 @@ body {
    =========================================================== */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    /* Mayor espacio para "respirar" */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    /* Ajustado para 2 columnas */
     padding-bottom: 40px;
 }
 
@@ -720,12 +720,13 @@ body {
     border-color: var(--text-secondary);
 }
 
-/* Warmup específico para igualar a Entrenar Hoy */
+/* Warmup específico - Ahora una columna */
 .card-warmup {
-    grid-column: 1 / -1;
+    grid-column: span 1;
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: white;
-    min-height: 100px;
+    min-height: 140px;
+    /* Igualado a las demás */
     border-radius: var(--radius);
     padding: 24px 16px;
     display: flex;
@@ -738,6 +739,45 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-float);
+}
+
+/* Nueva clase para Entrenamientos (Biblioteca) */
+.card-library {
+    grid-column: span 1;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+    min-height: 140px;
+    border-radius: var(--radius);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-float);
+}
+
+.card-library:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.card-library i.magazine-icon {
+    font-size: 2.5rem;
+    color: #facc15;
+    margin-bottom: 10px;
+}
+
+.card-library span.magazine-title {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    letter-spacing: 1px;
 }
 
 .card-warmup span {
@@ -4663,4 +4703,232 @@ body.fast-animations * {
     .chatbot-input-area {
         padding-bottom: 15px;
     }
+}
+
+/* ===========================================================
+   ONBOARDING PREMIUM (FORZAR MODO CLARO SIEMPRE)
+   =========================================================== */
+.onboarding-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #0f172a !important;
+    transition: opacity 0.5s ease-out;
+}
+
+.onboarding-step {
+    position: absolute;
+    width: 90%;
+    max-width: 420px;
+    background: #ffffff !important;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e2e8f0 !important;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.onboarding-step.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.ob-logo {
+    font-size: 3.2rem;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: -2px;
+    margin-bottom: 5px;
+    color: #0f172a !important;
+}
+
+.ob-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #0f172a !important;
+    letter-spacing: -0.5px;
+}
+
+.ob-subtitle {
+    font-size: 0.95rem;
+    color: #475569 !important;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.ob-input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.ob-input-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8 !important;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ob-input-group input, 
+.ob-input-group select {
+    width: 100%;
+    background: #f8fafc !important;
+    border: 2px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.ob-input-group input:focus,
+.ob-input-group select:focus {
+    outline: none;
+    border-color: #1e293b !important;
+    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05) !important;
+    background: #ffffff !important;
+}
+
+.ob-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.ob-grid .ob-input-group {
+    margin-bottom: 0;
+}
+
+.ob-grid .ob-input-group input,
+.ob-grid .ob-input-group select {
+    padding: 14px 10px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.ob-btn {
+    width: 100%;
+    background: #1e293b !important; /* Dark Slate Blue */
+    color: #ffffff !important;
+    border: none;
+    padding: 16px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ob-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    background: #334155 !important;
+}
+
+.ob-btn-final {
+    background: #d97706 !important; /* Gold */
+}
+
+.ob-btn-final:hover {
+    background: #b45309 !important;
+}
+
+/* =========================================================
+   BIBLIOTECA IRONLOG - GRID VISUAL
+   ========================================================= */
+.library-hero {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+}
+.library-hero h2 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    padding: 10px;
+}
+.library-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+    background: #111;
+}
+.library-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 20px 40px rgba(217, 119, 6, 0.3);
+    border: 1px solid rgba(250, 204, 21, 0.5);
+}
+.library-card-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.7s ease;
+    opacity: 0.8;
+}
+.library-card:hover .library-card-bg {
+    transform: scale(1.1);
+    opacity: 1;
+}
+.library-card-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 25px;
+    z-index: 2;
+}
+.library-card-title {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+}
+.library-card-subtitle {
+    color: var(--gold-accent);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
 }
