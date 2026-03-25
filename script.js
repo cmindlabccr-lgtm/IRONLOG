@@ -3423,25 +3423,42 @@ const LIBRARY_ROUTINES = {
 };
 
 function confirmLoadLibraryRoutine(routineName) {
-    if (currentData.length > 0) {
-        if (!confirm(`⚠️ Tienes un entrenamiento activo no guardado.\n\n¿Deseas descartarlo y cargar "${routineName}"?`)) {
+    if (!LIBRARY_ROUTINES[routineName]) {
+        console.error("Rutina no encontrada en la biblioteca:", routineName);
+        return;
+    }
+
+    const targetDate = new Date(currentWeekStart);
+    targetDate.setDate(currentWeekStart.getDate() + selectedDayIndex);
+    const storageKey = getStorageKey(targetDate);
+
+    // Verificar si ya hay datos hoy
+    let existingData = [];
+    try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) existingData = JSON.parse(raw);
+    } catch (e) { }
+
+    const hasRealData = existingData.length > 0 && existingData.some(ex => ex.exercise && ex.exercise.trim() !== '');
+
+    if (hasRealData) {
+        if (!confirm(`⚠️ Tienes un entrenamiento activo para hoy.\n\n¿Deseas descartarlo y cargar "${routineName}"?`)) {
             return;
         }
     }
-    
-    if (LIBRARY_ROUTINES[routineName]) {
-        currentData = JSON.parse(JSON.stringify(LIBRARY_ROUTINES[routineName]));
-        renderExercises();
-        saveCurrentDay();
-        
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('active')) {
-            toggleSidebar();
-        }
-        
+
+    // Copiar rutina de biblioteca
+    const newRoutine = JSON.parse(JSON.stringify(LIBRARY_ROUTINES[routineName]));
+
+    // Guardar y refrescar
+    saveAndRefresh(storageKey, newRoutine, true);
+
+    // Cambiar a la pestaña de entrenamiento y cerrar sidebar si es necesario
+    if (typeof switchTab === 'function') {
         switchTab('training');
-        alert(`🔥 Rutina de Biblioteca "${routineName}" cargada y lista para ejecutar.`);
     }
+    
+    alert(`🔥 Rutina de Biblioteca "${routineName}" cargada y lista para ejecutar.`);
 }
 
 /* ===========================================================
@@ -4041,7 +4058,9 @@ function renderLibraryTimeline(routines) {
         const explanation = LIBRARY_EXPLANATIONS[rtn.name] || '<em>Detalles próximos a añadir.</em>';
         
         finalHtml += `
-            <div class="ramp-card" style="animation-delay: ${delay}s; border: 1px solid var(--border-light); background: var(--bg-card); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">
+            <div class="ramp-card" 
+                onclick="confirmLoadLibraryRoutine('${rtn.name}')"
+                style="animation-delay: ${delay}s; border: 1px solid var(--border-light); background: var(--bg-card); padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); cursor: pointer;">
                 <div class="ramp-info" style="margin-left: 15px;">
                     <h3 class="ramp-title" style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
                         <span class="ramp-letter" style="background: rgba(217, 119, 6, 0.2); color: var(--accent-primary); border-radius: 50%; width: 35px; height: 35px; line-height: 35px; text-align: center; display: inline-block; font-size: 1rem; margin-right: 10px;">
