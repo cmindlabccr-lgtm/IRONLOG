@@ -844,7 +844,25 @@ body {
 
     /* Last odd card: span full width so it doesn't float alone */
     .card-supplements {
-        grid-column: 1 / -1;
+        grid-column: span 1;
+    }
+
+    .card-training .card-content {
+        padding: 5px;
+    }
+
+    .card-training i.magazine-icon {
+        font-size: 2.5rem;
+    }
+
+    .card-library .magazine-title, 
+    .card-warmup span {
+        font-size: 0.9rem !important;
+    }
+
+    .card-library i.magazine-icon,
+    .card-warmup i {
+        font-size: 1.2rem !important;
     }
 }
 
@@ -4874,8 +4892,8 @@ body.fast-animations * {
 }
 .library-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
     padding: 10px;
 }
 .library-card {
@@ -4917,10 +4935,10 @@ body.fast-animations * {
 }
 .library-card-title {
     color: #fff;
-    font-size: 2rem;
+    font-size: 1.2rem;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin: 0;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
 }
