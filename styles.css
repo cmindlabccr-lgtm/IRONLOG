@@ -739,6 +739,7 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-float);
+    text-decoration: none;
 }
 
 /* Nueva clase para Entrenamientos (Biblioteca) */
@@ -759,6 +760,7 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-float);
+    text-decoration: none;
 }
 
 .card-library:hover {
