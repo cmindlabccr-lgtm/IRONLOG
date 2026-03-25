@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ironlog-v3';
+const CACHE_NAME = 'ironlog-v4';
 const ASSETS = [
     'index.html',
     'styles.css',
@@ -10,8 +10,9 @@ const ASSETS = [
     'supplements_bg.png'
 ];
 
-// Install: Cache essential assets
+// Install: Cache essential assets and skip waiting
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(ASSETS);
@@ -19,22 +20,25 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activate: Clean old caches
+// Activate: Clean old caches and claim clients
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((keys) => {
-            return Promise.all(
-                keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-            );
-        })
+        Promise.all([
+            caches.keys().then((keys) => {
+                return Promise.all(
+                    keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+                );
+            }),
+            self.clients.claim()
+        ])
     );
 });
 
-// Fetch: Serve from cache, fallback to network
+// Fetch: NETWORK FIRST strategy for critical assets
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            return cachedResponse || fetch(event.request);
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
         })
     );
 });
